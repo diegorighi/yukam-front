@@ -1,4 +1,4 @@
-import { Component, ViewChild, signal } from '@angular/core';
+import { Component, ViewChild, ElementRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DashboardNavbarComponent } from '../../components/dashboard-navbar/dashboard-navbar.component';
@@ -6,8 +6,34 @@ import { LoadingComponent } from '../../components/loading/loading.component';
 import { BreadcrumbsComponent, Breadcrumb } from '../../components/breadcrumbs/breadcrumbs.component';
 import { ClienteService } from '../../services/cliente.service';
 import { ClientePF, ClientePJ, TipoPessoa } from '../../models/cliente.model';
+import ApexCharts from 'apexcharts';
 
-type ActionType = 'list' | 'searchByCpfCnpj' | 'searchByUuid' | 'update' | 'delete' | null;
+type ActionType =
+  | 'list'
+  | 'searchByCpfCnpj'
+  | 'searchByUuid'
+  | 'update'
+  | 'listInactive'
+  | 'reportLeads'
+  | 'reportClientesPorRegiao'
+  | 'reportTopVendedores'
+  | 'reportTopCompradores'
+  | 'reportClientesBloqueados'
+  | 'reportNovosClientes'
+  | 'reportFaixaEtaria'
+  | 'reportPorTipoCliente'
+  | 'reportEstadoCivil'
+  | 'reportVolumeVendas'
+  | 'reportOrigemLead'
+  | 'reportPFvsPJ'
+  | null;
+
+interface LeadSource {
+  label: string;
+  value: number;
+  percentage: number;
+  color: string;
+}
 
 @Component({
   selector: 'app-dashboard',
@@ -18,6 +44,9 @@ type ActionType = 'list' | 'searchByCpfCnpj' | 'searchByUuid' | 'update' | 'dele
 })
 export class DashboardComponent {
   @ViewChild(DashboardNavbarComponent) navbar!: DashboardNavbarComponent;
+  @ViewChild('leadsChart') leadsChartCanvas!: ElementRef<HTMLDivElement>;
+
+  private leadsChart: ApexCharts | null = null;
 
   // Signals para estado
   clientesPF = signal<ClientePF[]>([]);
@@ -30,6 +59,7 @@ export class DashboardComponent {
   currentPage = signal(0);
   totalPages = signal(0);
   totalElements = signal(0);
+  totalClientesAtivos = signal(0); // Total geral de clientes ativos (PF + PJ)
   private _pageSize = signal(8);
   pageSizeOptions = [4, 8, 12, 16, 20];
 
@@ -71,6 +101,10 @@ export class DashboardComponent {
   // Toast de notificação
   showToast = signal(false);
   toastMessage = signal('');
+
+  // Dados de Leads para o relatório (serão carregados do backend)
+  leadsData: LeadSource[] = [];
+  isLoadingLeads = signal(false);
 
   constructor(private clienteService: ClienteService) {}
 
@@ -134,6 +168,11 @@ export class DashboardComponent {
     if (action === 'list') {
       this.currentPage.set(0);
       this.loadClientes();
+    }
+
+    // Se selecionar "reportLeads", carrega os dados de leads
+    if (action === 'reportLeads') {
+      this.loadLeadsData();
     }
   }
 
@@ -205,13 +244,133 @@ export class DashboardComponent {
             active: true
           });
           break;
-        case 'delete':
+        case 'listInactive':
           crumbs.push({
             label: `Clientes ${tipoPessoaLabel}`,
             icon: clientIcon
           });
           crumbs.push({
-            label: 'Deletar Cliente',
+            label: 'Clientes Inativos',
+            active: true
+          });
+          break;
+        case 'reportLeads':
+          crumbs.push({
+            label: 'Relatórios',
+            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>'
+          });
+          crumbs.push({
+            label: 'Leads',
+            active: true
+          });
+          break;
+        case 'reportClientesPorRegiao':
+          crumbs.push({
+            label: 'Relatórios',
+            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>'
+          });
+          crumbs.push({
+            label: 'Clientes por Região',
+            active: true
+          });
+          break;
+        case 'reportTopVendedores':
+          crumbs.push({
+            label: 'Relatórios',
+            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>'
+          });
+          crumbs.push({
+            label: 'Top Vendedores',
+            active: true
+          });
+          break;
+        case 'reportTopCompradores':
+          crumbs.push({
+            label: 'Relatórios',
+            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>'
+          });
+          crumbs.push({
+            label: 'Top Compradores',
+            active: true
+          });
+          break;
+        case 'reportClientesBloqueados':
+          crumbs.push({
+            label: 'Relatórios',
+            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>'
+          });
+          crumbs.push({
+            label: 'Clientes Bloqueados',
+            active: true
+          });
+          break;
+        case 'reportNovosClientes':
+          crumbs.push({
+            label: 'Relatórios',
+            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>'
+          });
+          crumbs.push({
+            label: 'Novos Clientes',
+            active: true
+          });
+          break;
+        case 'reportFaixaEtaria':
+          crumbs.push({
+            label: 'Relatórios',
+            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>'
+          });
+          crumbs.push({
+            label: 'Clientes por Faixa Etária',
+            active: true
+          });
+          break;
+        case 'reportPorTipoCliente':
+          crumbs.push({
+            label: 'Relatórios',
+            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>'
+          });
+          crumbs.push({
+            label: 'Por Tipo de Cliente',
+            active: true
+          });
+          break;
+        case 'reportEstadoCivil':
+          crumbs.push({
+            label: 'Relatórios',
+            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>'
+          });
+          crumbs.push({
+            label: 'Por Estado Civil',
+            active: true
+          });
+          break;
+        case 'reportVolumeVendas':
+          crumbs.push({
+            label: 'Relatórios',
+            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>'
+          });
+          crumbs.push({
+            label: 'Volume de Vendas',
+            active: true
+          });
+          break;
+        case 'reportOrigemLead':
+          crumbs.push({
+            label: 'Relatórios',
+            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>'
+          });
+          crumbs.push({
+            label: 'Por Origem de Lead',
+            active: true
+          });
+          break;
+        case 'reportPFvsPJ':
+          crumbs.push({
+            label: 'Relatórios',
+            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>'
+          });
+          crumbs.push({
+            label: 'PF vs PJ',
             active: true
           });
           break;
@@ -236,22 +395,29 @@ export class DashboardComponent {
     const aumentedPageSize = this.pageSize * 3;
 
     if (this.tipoPessoa === 'PF') {
+      // Carrega a página solicitada para exibição
       this.clienteService.listClientesPF(this.currentPage(), aumentedPageSize).subscribe({
         next: (response: any) => {
           const elapsedTime = Date.now() - startTime;
           const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
 
-          setTimeout(() => {
-            // Filtra apenas clientes ativos no frontend
-            // TODO: Backend deve implementar filtro por 'ativo'
-            const clientesAtivos = response.content.filter((c: any) => c.ativo === true);
-            // Limita ao tamanho de página solicitado pelo usuário
-            const clientesLimitados = clientesAtivos.slice(0, this.pageSize);
-            this.clientesPF.set(clientesLimitados);
-            this.totalPages.set(response.totalPages);
-            this.totalElements.set(response.totalElements);
-            this.loading.set(false);
-          }, remainingTime);
+          // Carrega todos os clientes PF em paralelo para contar os ativos
+          this.clienteService.listClientesPF(0, 10000).subscribe({
+            next: (allResponse: any) => {
+              const totalAtivos = allResponse.content.filter((c: any) => c.ativo === true).length;
+
+              setTimeout(() => {
+                // Filtra apenas clientes ativos no frontend
+                const clientesAtivos = response.content.filter((c: any) => c.ativo === true);
+                // Limita ao tamanho de página solicitado pelo usuário
+                const clientesLimitados = clientesAtivos.slice(0, this.pageSize);
+                this.clientesPF.set(clientesLimitados);
+                this.totalPages.set(response.totalPages);
+                this.totalElements.set(totalAtivos);
+                this.loading.set(false);
+              }, remainingTime);
+            }
+          });
         },
         error: (err: any) => {
           this.error.set('Erro ao carregar clientes. Verifique se o servidor está rodando.');
@@ -260,22 +426,29 @@ export class DashboardComponent {
         }
       });
     } else {
+      // Carrega a página solicitada para exibição
       this.clienteService.listClientesPJ(this.currentPage(), aumentedPageSize).subscribe({
         next: (response: any) => {
           const elapsedTime = Date.now() - startTime;
           const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
 
-          setTimeout(() => {
-            // Filtra apenas clientes ativos no frontend
-            // TODO: Backend deve implementar filtro por 'ativo'
-            const clientesAtivos = response.content.filter((c: any) => c.ativo === true);
-            // Limita ao tamanho de página solicitado pelo usuário
-            const clientesLimitados = clientesAtivos.slice(0, this.pageSize);
-            this.clientesPJ.set(clientesLimitados);
-            this.totalPages.set(response.totalPages);
-            this.totalElements.set(response.totalElements);
-            this.loading.set(false);
-          }, remainingTime);
+          // Carrega todos os clientes PJ em paralelo para contar os ativos
+          this.clienteService.listClientesPJ(0, 10000).subscribe({
+            next: (allResponse: any) => {
+              const totalAtivos = allResponse.content.filter((c: any) => c.ativo === true).length;
+
+              setTimeout(() => {
+                // Filtra apenas clientes ativos no frontend
+                const clientesAtivos = response.content.filter((c: any) => c.ativo === true);
+                // Limita ao tamanho de página solicitado pelo usuário
+                const clientesLimitados = clientesAtivos.slice(0, this.pageSize);
+                this.clientesPJ.set(clientesLimitados);
+                this.totalPages.set(response.totalPages);
+                this.totalElements.set(totalAtivos);
+                this.loading.set(false);
+              }, remainingTime);
+            }
+          });
         },
         error: (err: any) => {
           this.error.set('Erro ao carregar clientes. Verifique se o servidor está rodando.');
@@ -283,6 +456,37 @@ export class DashboardComponent {
           console.error('Erro ao carregar clientes:', err);
         }
       });
+    }
+  }
+
+  // Carrega o total de clientes ativos (PF + PJ)
+  async loadTotalClientesAtivos() {
+    try {
+      const [responsePF, responsePJ] = await Promise.all([
+        this.clienteService.listClientesPF(0, 1).toPromise(),
+        this.clienteService.listClientesPJ(0, 1).toPromise()
+      ]);
+
+      if (responsePF && responsePJ) {
+        // Pega totalElements de cada um e subtrai os inativos
+        const totalPF = responsePF.totalElements;
+        const totalPJ = responsePJ.totalElements;
+
+        // Para calcular corretamente, precisamos buscar todos e filtrar
+        // Mas como otimização, vamos buscar uma amostra maior
+        const [allPF, allPJ] = await Promise.all([
+          this.clienteService.listClientesPF(0, 10000).toPromise(),
+          this.clienteService.listClientesPJ(0, 10000).toPromise()
+        ]);
+
+        if (allPF && allPJ) {
+          const ativosPF = allPF.content.filter((c: any) => c.ativo === true).length;
+          const ativosPJ = allPJ.content.filter((c: any) => c.ativo === true).length;
+          this.totalClientesAtivos.set(ativosPF + ativosPJ);
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao carregar total de clientes ativos:', error);
     }
   }
 
@@ -641,5 +845,245 @@ export class DashboardComponent {
         }
       });
     }
+  }
+
+  // ==================== RELATÓRIOS ====================
+
+  // Carrega todos os dados de leads do backend
+  async loadLeadsData(): Promise<void> {
+    this.isLoadingLeads.set(true);
+    this.error.set(null);
+
+    try {
+      // Busca apenas uma página grande para pegar todos os dados necessários de uma vez
+      const [responsePF, responsePJ] = await Promise.all([
+        this.clienteService.listClientesPF(0, 10000).toPromise(),
+        this.clienteService.listClientesPJ(0, 10000).toPromise()
+      ]);
+
+      if (!responsePF || !responsePJ) {
+        throw new Error('Falha ao carregar dados');
+      }
+
+      // Combina todos os clientes (PF + PJ) e filtra apenas ativos
+      const allClientes = [...responsePF.content, ...responsePJ.content];
+      const clientesAtivos = allClientes.filter(c => c.ativo === true);
+
+      // Processa os dados de origemLead
+      this.processLeadsData(clientesAtivos);
+
+      // Inicializa o gráfico após processar os dados
+      setTimeout(() => this.initLeadsChart(), 100);
+    } catch (error) {
+      console.error('Erro ao carregar dados de leads:', error);
+      this.error.set('Erro ao carregar dados de leads. Verifique se o servidor está rodando.');
+    } finally {
+      this.isLoadingLeads.set(false);
+    }
+  }
+
+  // Processa os dados de origemLead dos clientes
+  processLeadsData(clientes: (ClientePF | ClientePJ)[]): void {
+    // Mapa para contar as origens
+    const origemCount: Map<string, number> = new Map();
+    let totalComOrigem = 0;
+
+    // Conta as origens
+    clientes.forEach(cliente => {
+      const origem = (cliente as any).origemLead;
+      if (origem) {
+        origemCount.set(origem, (origemCount.get(origem) || 0) + 1);
+        totalComOrigem++;
+      }
+    });
+
+    // Define cores mais escuras e saturadas para melhor legibilidade
+    const colorMap: { [key: string]: string } = {
+      'GOOGLE_ADS': '#2563EB',      // Azul mais escuro
+      'INSTAGRAM': '#DB2777',       // Rosa mais escuro
+      'FACEBOOK': '#1E40AF',        // Azul escuro
+      'LINKEDIN': '#0284C7',        // Azul ciano escuro
+      'ORGANICO': '#059669',        // Verde escuro
+      'INDICACAO': '#D97706',       // Amarelo/laranja escuro
+      'YOUTUBE': '#DC2626',         // Vermelho escuro
+      'TWITTER': '#0EA5E9',         // Azul Twitter escuro
+      'TIKTOK': '#C026D3',          // Magenta escuro
+      'EMAIL_MARKETING': '#EA580C', // Laranja escuro
+      'WHATSAPP': '#16A34A',        // Verde WhatsApp escuro
+      'OUTROS': '#7C3AED'           // Roxo escuro
+    };
+
+    // Mapeia nomes amigáveis
+    const labelMap: { [key: string]: string } = {
+      'GOOGLE_ADS': 'Google Ads',
+      'INSTAGRAM': 'Instagram',
+      'FACEBOOK': 'Facebook',
+      'LINKEDIN': 'LinkedIn',
+      'ORGANICO': 'Orgânico (SEO)',
+      'INDICACAO': 'Indicação',
+      'YOUTUBE': 'YouTube',
+      'TWITTER': 'Twitter',
+      'TIKTOK': 'TikTok',
+      'EMAIL_MARKETING': 'Email Marketing',
+      'WHATSAPP': 'WhatsApp',
+      'OUTROS': 'Outros'
+    };
+
+    // Converte para o formato do gráfico
+    this.leadsData = Array.from(origemCount.entries())
+      .map(([origem, count]) => ({
+        label: labelMap[origem] || origem,
+        value: count,
+        percentage: totalComOrigem > 0 ? parseFloat(((count / totalComOrigem) * 100).toFixed(2)) : 0,
+        color: colorMap[origem] || '#' + Math.floor(Math.random() * 16777215).toString(16)
+      }))
+      .sort((a, b) => b.value - a.value); // Ordena por valor decrescente
+  }
+
+  // Inicializa o gráfico de leads (donut chart) com ApexCharts
+  initLeadsChart(): void {
+    if (!this.leadsChartCanvas) {
+      console.warn('Chart element not found');
+      return;
+    }
+
+    // Destroy previous chart if exists
+    if (this.leadsChart) {
+      this.leadsChart.destroy();
+    }
+
+    const options = {
+      series: this.leadsData.map(item => item.value),
+      chart: {
+        type: 'donut',
+        height: 450,
+        width: '100%',
+        animations: {
+          enabled: true,
+          easing: 'easeinout',
+          speed: 800,
+          animateGradually: {
+            enabled: true,
+            delay: 150
+          },
+          dynamicAnimation: {
+            enabled: true,
+            speed: 350
+          }
+        },
+        background: 'transparent',
+        fontFamily: 'Inter, system-ui, -apple-system, sans-serif'
+      },
+      labels: this.leadsData.map(item => item.label),
+      colors: this.leadsData.map(item => item.color),
+      plotOptions: {
+        pie: {
+          donut: {
+            size: '65%',
+            labels: {
+              show: true,
+              name: {
+                show: true,
+                fontSize: '18px',
+                fontWeight: 600,
+                color: '#E0E0E0'
+              },
+              value: {
+                show: true,
+                fontSize: '28px',
+                fontWeight: 700,
+                color: '#00D9FF',
+                formatter: (val: any) => {
+                  return val.toString();
+                }
+              },
+              total: {
+                show: true,
+                showAlways: true,
+                label: 'Total de Leads',
+                fontSize: '14px',
+                fontWeight: 500,
+                color: '#B0B0B0',
+                formatter: () => {
+                  return this.getTotalLeads().toString();
+                }
+              }
+            }
+          }
+        }
+      },
+      dataLabels: {
+        enabled: false
+      },
+      legend: {
+        show: false
+      },
+      tooltip: {
+        enabled: true,
+        theme: 'dark',
+        style: {
+          fontSize: '14px',
+          fontFamily: 'Inter, system-ui, sans-serif'
+        },
+        y: {
+          formatter: (val: number) => {
+            const total = this.getTotalLeads();
+            const percentage = ((val / total) * 100).toFixed(2);
+            return `${val} leads (${percentage}%)`;
+          }
+        }
+      },
+      stroke: {
+        show: false
+      },
+      responsive: [{
+        breakpoint: 768,
+        options: {
+          chart: {
+            height: 350
+          },
+          plotOptions: {
+            pie: {
+              donut: {
+                labels: {
+                  name: {
+                    fontSize: '14px'
+                  },
+                  value: {
+                    fontSize: '20px'
+                  },
+                  total: {
+                    fontSize: '12px'
+                  }
+                }
+              }
+            }
+          }
+        }
+      }]
+    };
+
+    this.leadsChart = new ApexCharts(this.leadsChartCanvas.nativeElement, options);
+    this.leadsChart.render();
+  }
+
+  // Retorna o total de leads
+  getTotalLeads(): number {
+    return this.leadsData.reduce((sum, item) => sum + item.value, 0);
+  }
+
+  // Retorna a principal fonte de leads
+  getTopLeadSource(): string {
+    if (this.leadsData.length === 0) return '-';
+    const topSource = this.leadsData.reduce((prev, current) =>
+      prev.value > current.value ? prev : current
+    );
+    return topSource.label;
+  }
+
+  // Retorna a conversão média (mock data)
+  getAverageConversion(): string {
+    // TODO: Implementar cálculo real quando houver dados de conversão
+    return '24.5';
   }
 }
