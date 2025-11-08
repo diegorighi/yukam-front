@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Círculo externo -->
+  <circle cx="100" cy="100" r="90" fill="none" stroke="#00d9ff" stroke-width="4"/>
+
+  <!-- Letra Y estilizada -->
+  <path d="M 60 60 L 80 90 L 100 60 M 80 90 L 80 120"
+        stroke="#00d9ff"
+        stroke-width="6"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        fill="none"/>
+
+  <!-- Detalhe geométrico (simbolizando tecnologia) -->
+  <circle cx="120" cy="75" r="8" fill="#00d9ff" opacity="0.8"/>
+  <circle cx="140" cy="90" r="6" fill="#00d9ff" opacity="0.6"/>
+  <circle cx="135" cy="110" r="5" fill="#00d9ff" opacity="0.4"/>
+
+  <!-- Texto "Yukam" -->
+  <text x="100" y="155"
+        font-family="Arial, sans-serif"
+        font-size="28"
+        font-weight="bold"
+        fill="#00d9ff"
+        text-anchor="middle">YUKAM</text>
+</svg>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 40">
+  <g fill="none" stroke="#00d9ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Ícone simples de avião/papel representando viagem -->
+    <path d="M10 20 L40 20" />
+    <path d="M40 20 L30 15" />
+    <path d="M40 20 L30 25" />
+    <path d="M20 20 L15 10" />
+    <path d="M20 20 L15 30" />
+  </g>
+  <text x="55" y="26" font-size="18" fill="#00d9ff" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-weight="600">Vanessa Viagem</text>
+</svg>

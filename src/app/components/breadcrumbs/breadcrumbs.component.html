@@ -1,0 +1,15 @@
+<nav class="breadcrumbs" *ngIf="breadcrumbs.length > 0">
+  <ol class="breadcrumb-list">
+    <li *ngFor="let crumb of breadcrumbs; let last = last"
+        class="breadcrumb-item"
+        [class.active]="crumb.active || last">
+      <span class="breadcrumb-icon" *ngIf="crumb.icon" [innerHTML]="getSafeIcon(crumb.icon)"></span>
+      <span class="breadcrumb-label">{{ crumb.label }}</span>
+      <span class="breadcrumb-separator" *ngIf="!last">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </span>
+    </li>
+  </ol>
+</nav>

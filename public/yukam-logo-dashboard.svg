@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Círculo externo -->
+  <circle cx="50" cy="50" r="45" fill="none" stroke="#00d9ff" stroke-width="3"/>
+
+  <!-- Letra Y estilizada -->
+  <path d="M 35 30 L 45 45 L 55 30 M 45 45 L 45 65"
+        stroke="#00d9ff"
+        stroke-width="5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        fill="none"/>
+
+  <!-- Detalhe geométrico (bolinhas simbolizando tecnologia) -->
+  <circle cx="65" cy="40" r="5" fill="#00d9ff" opacity="0.9"/>
+  <circle cx="72" cy="50" r="4" fill="#00d9ff" opacity="0.7"/>
+  <circle cx="68" cy="60" r="3.5" fill="#00d9ff" opacity="0.5"/>
+</svg>

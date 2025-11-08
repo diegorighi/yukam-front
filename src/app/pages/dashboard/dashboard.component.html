@@ -1,0 +1,919 @@
+<app-dashboard-navbar (tipoPessoaChange)="onTipoPessoaChange()"></app-dashboard-navbar>
+
+<!-- Toast Notification -->
+<div class="toast-notification" [class.show]="showToast()">
+  <svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>
+  <span>{{ toastMessage() }}</span>
+</div>
+
+<div class="dashboard-layout">
+  <!-- Menu Lateral (Aside) -->
+  <aside class="sidebar" [class.open]="sidebarOpen()">
+    <!-- Botão Hamburger / Collapse -->
+    <button class="hamburger-btn" (click)="toggleSidebar()" [class.open]="sidebarOpen()">
+      <!-- Linhas do hamburger (visíveis quando fechado) -->
+      <span></span>
+      <span></span>
+      <span></span>
+      <!-- Ícone de seta para a esquerda (visível quando aberto) -->
+      <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+
+    <div class="sidebar-header" *ngIf="sidebarOpen()">
+      <h3>Dashboard</h3>
+    </div>
+
+    <nav class="sidebar-menu">
+      <!-- Gerenciamento de Clientes -->
+      <div class="menu-category">
+        <div class="category-header" (click)="sidebarOpen() && toggleMenu('clientes')">
+          <span class="category-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          </span>
+          <span class="category-title" *ngIf="sidebarOpen()">Clientes {{ tipoPessoa }}</span>
+          <svg *ngIf="sidebarOpen()" class="collapse-icon" [class.expanded]="isMenuExpanded('clientes')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+        <div class="category-items" [class.show]="sidebarOpen() && isMenuExpanded('clientes')" *ngIf="sidebarOpen()">
+          <button
+            class="menu-item"
+            [class.active]="activeAction === 'list'"
+            (click)="setActiveAction('list')">
+            <span class="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+            </span>
+            <span class="item-text">Listar todos</span>
+          </button>
+
+          <button
+            class="menu-item"
+            [class.active]="activeAction === 'searchByCpfCnpj'"
+            (click)="setActiveAction('searchByCpfCnpj')">
+            <span class="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+            </span>
+            <span class="item-text">Buscar por {{ tipoPessoa === 'PF' ? 'CPF' : 'CNPJ' }}</span>
+          </button>
+
+          <button
+            class="menu-item"
+            [class.active]="activeAction === 'searchByUuid'"
+            (click)="setActiveAction('searchByUuid')">
+            <span class="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+              </svg>
+            </span>
+            <span class="item-text">Buscar por UUID</span>
+          </button>
+
+          <button
+            class="menu-item disabled"
+            [class.active]="activeAction === 'update'"
+            title="Funcionalidade futura">
+            <span class="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </span>
+            <span class="item-text">Atualizar dados</span>
+          </button>
+
+          <button
+            class="menu-item danger disabled"
+            [class.active]="activeAction === 'delete'"
+            title="Funcionalidade futura">
+            <span class="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </span>
+            <span class="item-text">Remover</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Relatórios -->
+      <div class="menu-category">
+        <div class="category-header" (click)="sidebarOpen() && toggleMenu('relatorios')">
+          <span class="category-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+          </span>
+          <span class="category-title" *ngIf="sidebarOpen()">Relatórios</span>
+          <svg *ngIf="sidebarOpen()" class="collapse-icon" [class.expanded]="isMenuExpanded('relatorios')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+        <div class="category-items" [class.show]="sidebarOpen() && isMenuExpanded('relatorios')" *ngIf="sidebarOpen()">
+          <p class="coming-soon">Em breve...</p>
+        </div>
+      </div>
+
+      <!-- Financeiro -->
+      <div class="menu-category">
+        <div class="category-header" (click)="sidebarOpen() && toggleMenu('financeiro')">
+          <span class="category-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="1" x2="12" y2="23"></line>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+          </span>
+          <span class="category-title" *ngIf="sidebarOpen()">Financeiro</span>
+          <svg *ngIf="sidebarOpen()" class="collapse-icon" [class.expanded]="isMenuExpanded('financeiro')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+        <div class="category-items" [class.show]="sidebarOpen() && isMenuExpanded('financeiro')" *ngIf="sidebarOpen()">
+          <p class="coming-soon">Em breve...</p>
+        </div>
+      </div>
+
+      <!-- Configurações -->
+      <div class="menu-category">
+        <div class="category-header" (click)="sidebarOpen() && toggleMenu('configuracoes')">
+          <span class="category-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M12 1v6m0 6v6m5.2-13.2l-4.2 4.2m0 6l4.2 4.2M23 12h-6m-6 0H5m13.2 5.2l-4.2-4.2m0-6l4.2-4.2"></path>
+            </svg>
+          </span>
+          <span class="category-title" *ngIf="sidebarOpen()">Configurações</span>
+          <svg *ngIf="sidebarOpen()" class="collapse-icon" [class.expanded]="isMenuExpanded('configuracoes')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+        <div class="category-items" [class.show]="sidebarOpen() && isMenuExpanded('configuracoes')" *ngIf="sidebarOpen()">
+          <p class="coming-soon">Em breve...</p>
+        </div>
+      </div>
+
+      <!-- Ajuda -->
+      <div class="menu-category">
+        <div class="category-header" (click)="sidebarOpen() && toggleMenu('ajuda')">
+          <span class="category-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </span>
+          <span class="category-title" *ngIf="sidebarOpen()">Ajuda</span>
+          <svg *ngIf="sidebarOpen()" class="collapse-icon" [class.expanded]="isMenuExpanded('ajuda')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+        <div class="category-items" [class.show]="sidebarOpen() && isMenuExpanded('ajuda')" *ngIf="sidebarOpen()">
+          <p class="coming-soon">Em breve...</p>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer" *ngIf="sidebarOpen()">
+      <p class="note">Funcionalidades controladas por ROLES</p>
+    </div>
+  </aside>
+
+  <!-- Área Principal de Conteúdo -->
+  <main class="main-content">
+    <!-- Breadcrumbs -->
+    <app-breadcrumbs [breadcrumbs]="breadcrumbs()"></app-breadcrumbs>
+
+    <!-- Estado Inicial: Nenhuma ação selecionada -->
+    <div *ngIf="!activeAction" class="welcome-screen">
+      <h2>Bem-vindo ao Painel de Controle</h2>
+      <p>Selecione uma opção no menu lateral para começar</p>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading()" class="loading-overlay">
+      <app-loading [message]="loadingMessage()" size="large"></app-loading>
+    </div>
+
+    <!-- Mensagem de Erro -->
+    <div *ngIf="error()" class="error-message">
+      <span class="error-icon">⚠️</span>
+      {{ error() }}
+      <button class="close-error" (click)="error.set(null)">✕</button>
+    </div>
+
+    <!-- Listar Todos os Clientes -->
+    <div *ngIf="activeAction === 'list' && !loading()" class="action-content">
+      <div class="content-header">
+        <h2>Lista de Clientes {{ tipoPessoa }}</h2>
+        <button class="action-btn primary" (click)="loadClientes()">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+          Atualizar
+        </button>
+      </div>
+
+      <div *ngIf="(tipoPessoa === 'PF' && clientesPF().length > 0) || (tipoPessoa === 'PJ' && clientesPJ().length > 0)" class="clientes-container">
+        <div class="stats-bar">
+          <div class="stats-info">
+            <span class="stat-item">
+              <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              Total: {{ totalElements() }} clientes
+            </span>
+            <span class="stat-item">
+              <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="2" width="18" height="20" rx="2" ry="2"></rect>
+                <line x1="7" y1="6" x2="17" y2="6"></line>
+                <line x1="7" y1="10" x2="17" y2="10"></line>
+                <line x1="7" y1="14" x2="17" y2="14"></line>
+                <line x1="7" y1="18" x2="13" y2="18"></line>
+              </svg>
+              Página {{ currentPage() + 1 }} de {{ totalPages() }}
+            </span>
+          </div>
+          <div class="page-size-selector">
+            <label for="pageSize">Cards por página:</label>
+            <select
+              id="pageSize"
+              [(ngModel)]="pageSize"
+              (ngModelChange)="changePageSize($event)"
+              class="page-size-select">
+              <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="clientes-grid">
+          <ng-container *ngIf="tipoPessoa === 'PF'">
+            <div *ngFor="let cliente of clientesPF()"
+                 class="cliente-card"
+                 (click)="viewClienteDetails(cliente)">
+              <div class="card-header">
+                <h3>{{ $any(cliente).nomeCompleto }}</h3>
+                <span class="status-badge" [class.blocked]="$any(cliente).bloqueado">
+                  <svg *ngIf="$any(cliente).bloqueado" class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                  <svg *ngIf="!$any(cliente).bloqueado" class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  {{ $any(cliente).bloqueado ? 'Bloqueado' : 'Ativo' }}
+                </span>
+              </div>
+              <div class="card-body">
+                <p class="card-field-with-copy">
+                  <strong>CPF:</strong>
+                  <span>{{ $any(cliente).cpf }}</span>
+                  <button
+                    class="copy-icon-btn"
+                    (click)="copyToClipboard($any(cliente).cpf, 'CPF'); $event.stopPropagation()"
+                    title="Copiar CPF">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  </button>
+                </p>
+                <p *ngIf="$any(cliente).email"><strong>Email:</strong> {{ $any(cliente).email }}</p>
+              </div>
+              <div class="card-footer">
+                <span class="uuid-with-copy">
+                  <small>UUID: {{ $any(cliente).publicId }}</small>
+                  <button
+                    class="copy-icon-btn small"
+                    (click)="copyToClipboard($any(cliente).publicId, 'UUID'); $event.stopPropagation()"
+                    title="Copiar UUID">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  </button>
+                </span>
+              </div>
+            </div>
+          </ng-container>
+
+          <ng-container *ngIf="tipoPessoa === 'PJ'">
+            <div *ngFor="let cliente of clientesPJ()"
+                 class="cliente-card"
+                 (click)="viewClienteDetails(cliente)">
+              <div class="card-header">
+                <h3>{{ $any(cliente).nomeFantasia }}</h3>
+                <span class="status-badge" [class.blocked]="$any(cliente).bloqueado">
+                  <svg *ngIf="$any(cliente).bloqueado" class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                  <svg *ngIf="!$any(cliente).bloqueado" class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  {{ $any(cliente).bloqueado ? 'Bloqueado' : 'Ativo' }}
+                </span>
+              </div>
+              <div class="card-body">
+                <p class="card-field-with-copy">
+                  <strong>CNPJ:</strong>
+                  <span>{{ $any(cliente).cnpj }}</span>
+                  <button
+                    class="copy-icon-btn"
+                    (click)="copyToClipboard($any(cliente).cnpj, 'CNPJ'); $event.stopPropagation()"
+                    title="Copiar CNPJ">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  </button>
+                </p>
+                <p *ngIf="$any(cliente).email"><strong>Email:</strong> {{ $any(cliente).email }}</p>
+                <p *ngIf="$any(cliente).razaoSocial">
+                  <strong>Razão Social:</strong> {{ $any(cliente).razaoSocial }}
+                </p>
+              </div>
+              <div class="card-footer">
+                <span class="uuid-with-copy">
+                  <small>UUID: {{ $any(cliente).publicId }}</small>
+                  <button
+                    class="copy-icon-btn small"
+                    (click)="copyToClipboard($any(cliente).publicId, 'UUID'); $event.stopPropagation()"
+                    title="Copiar UUID">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  </button>
+                </span>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+
+        <div class="pagination" *ngIf="totalPages() > 1">
+          <button
+            class="page-btn prev-next"
+            [disabled]="currentPage() === 0"
+            (click)="previousPage()">
+            ‹ Anterior
+          </button>
+
+          <ng-container *ngFor="let page of getPageNumbers()">
+            <button
+              *ngIf="page !== '...'"
+              class="page-number-btn"
+              [class.active]="page === currentPage()"
+              (click)="goToPage(+page)">
+              {{ +page + 1 }}
+            </button>
+            <span *ngIf="page === '...'" class="page-ellipsis">...</span>
+          </ng-container>
+
+          <button
+            class="page-btn prev-next"
+            [disabled]="currentPage() >= totalPages() - 1"
+            (click)="nextPage()">
+            Próxima ›
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Buscar por CPF/CNPJ -->
+    <div *ngIf="activeAction === 'searchByCpfCnpj' && !loading()" class="action-content">
+      <div class="content-header">
+        <h2>Buscar Cliente por {{ tipoPessoa === 'PF' ? 'CPF' : 'CNPJ' }}</h2>
+      </div>
+
+      <div class="search-form">
+        <div class="form-group">
+          <label>{{ tipoPessoa === 'PF' ? 'CPF' : 'CNPJ' }}</label>
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            [placeholder]="tipoPessoa === 'PF' ? 'Digite o CPF (somente números)' : 'Digite o CNPJ (somente números)'"
+            class="form-input"
+            (keyup.enter)="searchByCpfOrCnpj()">
+        </div>
+        <button class="action-btn primary" (click)="searchByCpfOrCnpj()">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+          Buscar
+        </button>
+      </div>
+    </div>
+
+    <!-- Buscar por UUID -->
+    <div *ngIf="activeAction === 'searchByUuid' && !loading()" class="action-content">
+      <div class="content-header">
+        <h2>Buscar Cliente por UUID</h2>
+      </div>
+
+      <div class="search-form">
+        <div class="form-group">
+          <label>UUID do Cliente</label>
+          <input
+            type="text"
+            [(ngModel)]="uuidSearch"
+            placeholder="Digite o UUID (ex: cd15550c-c146-4ed8-b141-3f3347dca756)"
+            class="form-input"
+            (keyup.enter)="searchByUuid()">
+        </div>
+        <button class="action-btn primary" (click)="searchByUuid()">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+          Buscar
+        </button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal de Detalhes -->
+<div *ngIf="showDetail()" class="modal-overlay" (click)="closeDetail()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Detalhes do Cliente</h2>
+      <button class="close-btn" (click)="closeDetail()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- MODAL MÍNIMO (Listagem e Busca por CPF/CNPJ) -->
+      <div *ngIf="selectedCliente() && !isFullDetail()" class="detail-grid-minimal">
+        <!-- UUID com botão de copiar (sem ícone) -->
+        <div class="detail-item-copy-clean">
+          <div class="detail-info">
+            <strong>UUID</strong>
+            <span class="copy-text">{{ $any(selectedCliente()).publicId }}</span>
+          </div>
+          <button
+            class="copy-btn-clean"
+            (click)="copyToClipboard($any(selectedCliente()).publicId, 'UUID')"
+            title="Copiar UUID">
+            Copiar
+          </button>
+        </div>
+
+        <!-- Dados para Pessoa Física -->
+        <div *ngIf="tipoPessoa === 'PF'">
+          <div class="detail-item">
+            <strong>Primeiro Nome:</strong>
+            <span>{{ $any(selectedCliente()).primeiroNome }}</span>
+          </div>
+          <div class="detail-item">
+            <strong>Sobrenome:</strong>
+            <span>{{ $any(selectedCliente()).sobrenome }}</span>
+          </div>
+
+          <!-- CPF com botão de copiar (sem ícone) -->
+          <div class="detail-item-copy-clean">
+            <div class="detail-info">
+              <strong>CPF</strong>
+              <span class="copy-text">{{ $any(selectedCliente()).cpf }}</span>
+            </div>
+            <button
+              class="copy-btn-clean"
+              (click)="copyToClipboard($any(selectedCliente()).cpf, 'CPF')"
+              title="Copiar CPF">
+              Copiar
+            </button>
+          </div>
+        </div>
+
+        <!-- Dados para Pessoa Jurídica -->
+        <div *ngIf="tipoPessoa === 'PJ'">
+          <div class="detail-item">
+            <strong>Nome Fantasia:</strong>
+            <span>{{ $any(selectedCliente()).nomeFantasia }}</span>
+          </div>
+
+          <!-- CNPJ com botão de copiar (sem ícone) -->
+          <div class="detail-item-copy-clean">
+            <div class="detail-info">
+              <strong>CNPJ</strong>
+              <span class="copy-text">{{ $any(selectedCliente()).cnpj }}</span>
+            </div>
+            <button
+              class="copy-btn-clean"
+              (click)="copyToClipboard($any(selectedCliente()).cnpj, 'CNPJ')"
+              title="Copiar CNPJ">
+              Copiar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL COMPLETO (Busca por UUID) -->
+      <div *ngIf="selectedCliente() && isFullDetail()" class="detail-grid-full">
+        <!-- UUID com botão de copiar -->
+        <div class="detail-item-copy-clean">
+          <div class="detail-info">
+            <strong>UUID</strong>
+            <span class="copy-text">{{ $any(selectedCliente()).publicId }}</span>
+          </div>
+          <button
+            class="copy-btn-clean"
+            (click)="copyToClipboard($any(selectedCliente()).publicId, 'UUID')"
+            title="Copiar UUID">
+            Copiar
+          </button>
+        </div>
+
+        <!-- DADOS PARA PESSOA FÍSICA -->
+        <div *ngIf="tipoPessoa === 'PF'">
+          <!-- Seção: Dados Pessoais -->
+          <div class="detail-section">
+            <h3 class="section-title">Dados Pessoais</h3>
+            <div class="section-content">
+              <div class="detail-item">
+                <strong>Nome Completo:</strong>
+                <span>{{ $any(selectedCliente()).nomeCompleto }}</span>
+              </div>
+              <div class="detail-item">
+                <strong>Primeiro Nome:</strong>
+                <span>{{ $any(selectedCliente()).primeiroNome }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).nomeDoMeio">
+                <strong>Nome do Meio:</strong>
+                <span>{{ $any(selectedCliente()).nomeDoMeio }}</span>
+              </div>
+              <div class="detail-item">
+                <strong>Sobrenome:</strong>
+                <span>{{ $any(selectedCliente()).sobrenome }}</span>
+              </div>
+              <div class="detail-item-copy-clean">
+                <div class="detail-info">
+                  <strong>CPF</strong>
+                  <span class="copy-text">{{ $any(selectedCliente()).cpf }}</span>
+                </div>
+                <button
+                  class="copy-btn-clean"
+                  (click)="copyToClipboard($any(selectedCliente()).cpf, 'CPF')"
+                  title="Copiar CPF">
+                  Copiar
+                </button>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).rg">
+                <strong>RG:</strong>
+                <span>{{ $any(selectedCliente()).rg }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).dataNascimento">
+                <strong>Data de Nascimento:</strong>
+                <span>{{ $any(selectedCliente()).dataNascimento }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).idade">
+                <strong>Idade:</strong>
+                <span>{{ $any(selectedCliente()).idade }} anos</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).sexo">
+                <strong>Sexo:</strong>
+                <span>{{ $any(selectedCliente()).sexo }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção: Filiação e Estado Civil -->
+          <div class="detail-section" *ngIf="$any(selectedCliente()).nomeMae || $any(selectedCliente()).nomePai || $any(selectedCliente()).estadoCivil">
+            <h3 class="section-title">Filiação e Estado Civil</h3>
+            <div class="section-content">
+              <div class="detail-item" *ngIf="$any(selectedCliente()).nomeMae">
+                <strong>Nome da Mãe:</strong>
+                <span>{{ $any(selectedCliente()).nomeMae }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).nomePai">
+                <strong>Nome do Pai:</strong>
+                <span>{{ $any(selectedCliente()).nomePai }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).estadoCivil">
+                <strong>Estado Civil:</strong>
+                <span>{{ $any(selectedCliente()).estadoCivil }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção: Informações Profissionais -->
+          <div class="detail-section" *ngIf="$any(selectedCliente()).profissao || $any(selectedCliente()).nacionalidade || $any(selectedCliente()).naturalidade">
+            <h3 class="section-title">Informações Profissionais e Origem</h3>
+            <div class="section-content">
+              <div class="detail-item" *ngIf="$any(selectedCliente()).profissao">
+                <strong>Profissão:</strong>
+                <span>{{ $any(selectedCliente()).profissao }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).nacionalidade">
+                <strong>Nacionalidade:</strong>
+                <span>{{ $any(selectedCliente()).nacionalidade }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).naturalidade">
+                <strong>Naturalidade:</strong>
+                <span>{{ $any(selectedCliente()).naturalidade }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção: Contatos -->
+          <div class="detail-section">
+            <h3 class="section-title">Contatos</h3>
+            <div class="section-content">
+              <div class="detail-item" *ngIf="$any(selectedCliente()).email">
+                <strong>Email:</strong>
+                <span>{{ $any(selectedCliente()).email }}</span>
+              </div>
+              <p *ngIf="!$any(selectedCliente()).email" class="no-data">Nenhum contato cadastrado</p>
+            </div>
+          </div>
+
+          <!-- Seção: Informações Comerciais -->
+          <div class="detail-section">
+            <h3 class="section-title">Informações Comerciais</h3>
+            <div class="section-content">
+              <div class="detail-item" *ngIf="$any(selectedCliente()).tipoCliente">
+                <strong>Tipo de Cliente:</strong>
+                <span>{{ $any(selectedCliente()).tipoCliente }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).origemLead">
+                <strong>Origem Lead:</strong>
+                <span>{{ $any(selectedCliente()).origemLead }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).totalComprasRealizadas !== undefined">
+                <strong>Total de Compras:</strong>
+                <span>{{ $any(selectedCliente()).totalComprasRealizadas }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).totalVendasRealizadas !== undefined">
+                <strong>Total de Vendas:</strong>
+                <span>{{ $any(selectedCliente()).totalVendasRealizadas }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).valorTotalComprado !== undefined">
+                <strong>Valor Total Comprado:</strong>
+                <span>R$ {{ $any(selectedCliente()).valorTotalComprado }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).valorTotalVendido !== undefined">
+                <strong>Valor Total Vendido:</strong>
+                <span>R$ {{ $any(selectedCliente()).valorTotalVendido }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção: Status e Observações -->
+          <div class="detail-section">
+            <h3 class="section-title">Status e Observações</h3>
+            <div class="section-content">
+              <div class="detail-item">
+                <strong>Status:</strong>
+                <span [class.text-danger]="$any(selectedCliente()).bloqueado">
+                  {{ $any(selectedCliente()).bloqueado ? 'Bloqueado' : 'Ativo' }}
+                </span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).motivoBloqueio">
+                <strong>Motivo Bloqueio:</strong>
+                <span class="text-danger">{{ $any(selectedCliente()).motivoBloqueio }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).observacoes">
+                <strong>Observações:</strong>
+                <span>{{ $any(selectedCliente()).observacoes }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).dataCriacao">
+                <strong>Data de Criação:</strong>
+                <span>{{ $any(selectedCliente()).dataCriacao }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).dataAtualizacao">
+                <strong>Última Atualização:</strong>
+                <span>{{ $any(selectedCliente()).dataAtualizacao }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DADOS PARA PESSOA JURÍDICA -->
+        <div *ngIf="tipoPessoa === 'PJ'">
+          <!-- Seção: Dados da Empresa -->
+          <div class="detail-section">
+            <h3 class="section-title">Dados da Empresa</h3>
+            <div class="section-content">
+              <div class="detail-item">
+                <strong>Razão Social:</strong>
+                <span>{{ $any(selectedCliente()).razaoSocial }}</span>
+              </div>
+              <div class="detail-item">
+                <strong>Nome Fantasia:</strong>
+                <span>{{ $any(selectedCliente()).nomeFantasia }}</span>
+              </div>
+              <div class="detail-item">
+                <strong>Nome de Exibição:</strong>
+                <span>{{ $any(selectedCliente()).nomeExibicao }}</span>
+              </div>
+              <div class="detail-item-copy-clean">
+                <div class="detail-info">
+                  <strong>CNPJ</strong>
+                  <span class="copy-text">{{ $any(selectedCliente()).cnpj }}</span>
+                </div>
+                <button
+                  class="copy-btn-clean"
+                  (click)="copyToClipboard($any(selectedCliente()).cnpj, 'CNPJ')"
+                  title="Copiar CNPJ">
+                  Copiar
+                </button>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).inscricaoEstadual">
+                <strong>Inscrição Estadual:</strong>
+                <span>{{ $any(selectedCliente()).inscricaoEstadual }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).inscricaoMunicipal">
+                <strong>Inscrição Municipal:</strong>
+                <span>{{ $any(selectedCliente()).inscricaoMunicipal }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).dataAbertura">
+                <strong>Data de Abertura:</strong>
+                <span>{{ $any(selectedCliente()).dataAbertura }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção: Informações Empresariais -->
+          <div class="detail-section">
+            <h3 class="section-title">Informações Empresariais</h3>
+            <div class="section-content">
+              <div class="detail-item" *ngIf="$any(selectedCliente()).porteEmpresa">
+                <strong>Porte da Empresa:</strong>
+                <span>{{ $any(selectedCliente()).porteEmpresa }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).naturezaJuridica">
+                <strong>Natureza Jurídica:</strong>
+                <span>{{ $any(selectedCliente()).naturezaJuridica }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).atividadePrincipal">
+                <strong>Atividade Principal:</strong>
+                <span>{{ $any(selectedCliente()).atividadePrincipal }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).capitalSocial !== undefined">
+                <strong>Capital Social:</strong>
+                <span>R$ {{ $any(selectedCliente()).capitalSocial }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção: Responsável -->
+          <div class="detail-section" *ngIf="$any(selectedCliente()).nomeResponsavel || $any(selectedCliente()).cpfResponsavel || $any(selectedCliente()).cargoResponsavel">
+            <h3 class="section-title">Responsável</h3>
+            <div class="section-content">
+              <div class="detail-item" *ngIf="$any(selectedCliente()).nomeResponsavel">
+                <strong>Nome:</strong>
+                <span>{{ $any(selectedCliente()).nomeResponsavel }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).cpfResponsavel">
+                <strong>CPF:</strong>
+                <span>{{ $any(selectedCliente()).cpfResponsavel }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).cargoResponsavel">
+                <strong>Cargo:</strong>
+                <span>{{ $any(selectedCliente()).cargoResponsavel }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção: Contatos -->
+          <div class="detail-section">
+            <h3 class="section-title">Contatos</h3>
+            <div class="section-content">
+              <div class="detail-item" *ngIf="$any(selectedCliente()).email">
+                <strong>Email:</strong>
+                <span>{{ $any(selectedCliente()).email }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).site">
+                <strong>Site:</strong>
+                <span>{{ $any(selectedCliente()).site }}</span>
+              </div>
+              <p *ngIf="!$any(selectedCliente()).email && !$any(selectedCliente()).site" class="no-data">Nenhum contato cadastrado</p>
+            </div>
+          </div>
+
+          <!-- Seção: Informações Comerciais -->
+          <div class="detail-section">
+            <h3 class="section-title">Informações Comerciais</h3>
+            <div class="section-content">
+              <div class="detail-item" *ngIf="$any(selectedCliente()).tipoCliente">
+                <strong>Tipo de Cliente:</strong>
+                <span>{{ $any(selectedCliente()).tipoCliente }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).origemLead">
+                <strong>Origem Lead:</strong>
+                <span>{{ $any(selectedCliente()).origemLead }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).totalComprasRealizadas !== undefined">
+                <strong>Total de Compras:</strong>
+                <span>{{ $any(selectedCliente()).totalComprasRealizadas }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).totalVendasRealizadas !== undefined">
+                <strong>Total de Vendas:</strong>
+                <span>{{ $any(selectedCliente()).totalVendasRealizadas }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).valorTotalComprado !== undefined">
+                <strong>Valor Total Comprado:</strong>
+                <span>R$ {{ $any(selectedCliente()).valorTotalComprado }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).valorTotalVendido !== undefined">
+                <strong>Valor Total Vendido:</strong>
+                <span>R$ {{ $any(selectedCliente()).valorTotalVendido }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção: Status e Observações -->
+          <div class="detail-section">
+            <h3 class="section-title">Status e Observações</h3>
+            <div class="section-content">
+              <div class="detail-item">
+                <strong>Status:</strong>
+                <span [class.text-danger]="$any(selectedCliente()).bloqueado">
+                  {{ $any(selectedCliente()).bloqueado ? 'Bloqueado' : 'Ativo' }}
+                </span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).motivoBloqueio">
+                <strong>Motivo Bloqueio:</strong>
+                <span class="text-danger">{{ $any(selectedCliente()).motivoBloqueio }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).observacoes">
+                <strong>Observações:</strong>
+                <span>{{ $any(selectedCliente()).observacoes }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).dataCriacao">
+                <strong>Data de Criação:</strong>
+                <span>{{ $any(selectedCliente()).dataCriacao }}</span>
+              </div>
+              <div class="detail-item" *ngIf="$any(selectedCliente()).dataAtualizacao">
+                <strong>Última Atualização:</strong>
+                <span>{{ $any(selectedCliente()).dataAtualizacao }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <div class="modal-actions-left">
+        <button class="action-btn danger" (click)="confirmDelete()" title="Deletar cliente">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          Deletar
+        </button>
+        <button
+          *ngIf="$any(selectedCliente()).bloqueado"
+          class="action-btn warning"
+          (click)="confirmDesbloquear()"
+          title="Desbloquear cliente">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+          </svg>
+          Desbloquear
+        </button>
+        <button
+          *ngIf="!$any(selectedCliente()).bloqueado"
+          class="action-btn warning"
+          (click)="confirmBloquear()"
+          title="Bloquear cliente">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          Bloquear
+        </button>
+      </div>
+      <div class="modal-actions-right">
+        <button class="action-btn secondary" (click)="closeDetail()">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>

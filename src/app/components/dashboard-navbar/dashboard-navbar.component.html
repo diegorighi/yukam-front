@@ -1,0 +1,28 @@
+<nav class="dashboard-navbar">
+  <div class="navbar-container">
+    <div class="navbar-logo">
+      <a href="/">
+        <img src="yukam-logo-dashboard.svg" alt="Yukam Logo" class="logo-image">
+        <span class="logo-text">Dashboard</span>
+      </a>
+    </div>
+    <div class="tipo-pessoa-toggle">
+      <div class="toggle-slider" [class.pj]="tipoPessoa() === 'PJ'"></div>
+      <button
+        class="toggle-btn"
+        [class.active]="tipoPessoa() === 'PF'"
+        (click)="setTipoPessoa('PF')">
+        Pessoa Física
+      </button>
+      <button
+        class="toggle-btn"
+        [class.active]="tipoPessoa() === 'PJ'"
+        (click)="setTipoPessoa('PJ')">
+        Pessoa Jurídica
+      </button>
+    </div>
+    <div class="navbar-actions">
+      <button class="action-btn">Sair</button>
+    </div>
+  </div>
+</nav>
