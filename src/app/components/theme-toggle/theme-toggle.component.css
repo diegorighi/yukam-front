@@ -51,7 +51,7 @@
   background: white;
   border-radius: 14px;
   transform: translateY(-50%);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s cubic-bezier(0.4, 0, 0.2, 1), right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -61,7 +61,9 @@
 
 /* Move slider to the right when dark */
 .theme-toggle-button.dark .toggle-slider {
-  transform: translateX(23px) translateY(-50%);
+  left: auto;
+  right: 2px;
+  transform: translateY(-50%);
 }
 
 .toggle-icon {
@@ -83,9 +85,9 @@
   transition: transform 0.3s ease, opacity 0.2s ease;
 }
 
-/* Ajuste fino: no modo dark o ícone da lua afasta 2px da borda */
+/* No modo dark, a lua fica centralizada dentro da bolinha */
 .theme-toggle-button.dark .toggle-icon svg {
-  transform: translateX(-2px);
+  transform: translateX(0);
 }
 
 /* Mobile responsiveness */
@@ -103,7 +105,9 @@
   }
 
   .theme-toggle-button.dark .toggle-slider {
-    transform: translateX(21px) translateY(-50%);
+    left: auto;
+    right: 2px;
+    transform: translateY(-50%);
   }
 }
 
