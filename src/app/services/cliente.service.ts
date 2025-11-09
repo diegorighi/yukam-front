@@ -7,7 +7,7 @@ import { ClientePF, ClientePJ, PageResponse } from '../models/cliente.model';
   providedIn: 'root'
 })
 export class ClienteService {
-  private apiUrl = 'http://localhost:8081/api/clientes/v1/clientes';
+  private apiUrl = '/api/clientes/v1/clientes';
 
   constructor(private http: HttpClient) { }
 

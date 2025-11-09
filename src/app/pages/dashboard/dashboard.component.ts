@@ -127,6 +127,21 @@ export class DashboardComponent {
     });
   }
 
+  // Clique no cabeçalho da categoria: quando colapsado, abre sidebar e expande a categoria
+  onCategoryHeaderClick(menuKey: string) {
+    if (!this.sidebarOpen()) {
+      this.sidebarOpen.set(true);
+      const states = this.menuStates();
+      const newStates: {[key: string]: boolean} = {};
+      for (const key of Object.keys(states)) {
+        newStates[key] = key === menuKey;
+      }
+      this.menuStates.set(newStates);
+    } else {
+      this.toggleMenu(menuKey);
+    }
+  }
+
   // Verifica se um menu está expandido
   isMenuExpanded(menuKey: string): boolean {
     return this.menuStates()[menuKey];
@@ -182,14 +197,14 @@ export class DashboardComponent {
     const homeIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>';
     const clientIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>';
 
-    const baseBreadcrumb: Breadcrumb = {
-      label: 'Dashboard',
-      icon: homeIcon
-    };
-
-    const crumbs: Breadcrumb[] = [baseBreadcrumb];
+    const crumbs: Breadcrumb[] = [];
 
     if (action) {
+      const baseBreadcrumb: Breadcrumb = {
+        label: 'Dashboard',
+        icon: homeIcon
+      };
+      crumbs.push(baseBreadcrumb);
       const tipoPessoaLabel = this.tipoPessoa === 'PF' ? 'Pessoa Física' : 'Pessoa Jurídica';
 
       switch (action) {
