@@ -388,7 +388,7 @@
 
     <!-- Loading -->
     <div *ngIf="loading()" class="loading-overlay">
-      <app-loading [message]="loadingMessage()" size="large"></app-loading>
+      <app-loading [message]="loadingMessage()" size="large" type="progress-bar"></app-loading>
     </div>
 
     <!-- Mensagem de Erro -->
@@ -420,6 +420,27 @@
             <span class="stat-item">
               Página {{ currentPage() + 1 }} de {{ totalPages() }}
             </span>
+          </div>
+          <div class="status-filter">
+            <span class="status-label">{{ statusFilter() === 'bloqueados' ? 'Bloqueados' : 'Ativos' }}</span>
+            <button
+              class="status-toggle-button"
+              [class.blocked]="statusFilter() === 'bloqueados'"
+              (click)="toggleStatusFilter()"
+              aria-label="Alternar filtro de ativos/bloqueados"
+              [attr.aria-pressed]="statusFilter() === 'bloqueados'">
+              <div class="toggle-slider">
+                <div class="toggle-knob">
+                  <svg *ngIf="statusFilter() === 'bloqueados'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                  <svg *ngIf="statusFilter() === 'ativos'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+              </div>
+            </button>
           </div>
           <div class="page-size-selector">
             <label for="pageSize">Cards por página:</label>

@@ -107,6 +107,18 @@ export class DashboardComponent {
   leadsData: LeadSource[] = [];
   isLoadingLeads = signal(false);
 
+  // Filtro de status (Ativos/Bloqueados)
+  statusFilter = signal<'ativos' | 'bloqueados'>('ativos');
+
+  toggleStatusFilter() {
+    const next = this.statusFilter() === 'ativos' ? 'bloqueados' : 'ativos';
+    this.statusFilter.set(next);
+    // Recarrega a lista com o novo filtro
+    if (this.activeAction === 'list') {
+      this.loadClientes();
+    }
+  }
+
   constructor(private clienteService: ClienteService) {}
 
   get tipoPessoa(): TipoPessoa {
@@ -417,25 +429,29 @@ export class DashboardComponent {
           const elapsedTime = Date.now() - startTime;
           const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
 
-          // Carrega todos os clientes PF em paralelo para contar os ativos
-          this.clienteService.listClientesPF(0, 10000).subscribe({
-            next: (allResponse: any) => {
-              const totalAtivos = allResponse.content.filter((c: any) => c.ativo === true).length;
-
-              setTimeout(() => {
-                // Filtra apenas clientes ativos no frontend
-                const clientesAtivos = response.content.filter((c: any) => c.ativo === true);
-                // Limita ao tamanho de página solicitado pelo usuário
-                const clientesLimitados = clientesAtivos.slice(0, this.pageSize);
-                this.clientesPF.set(clientesLimitados);
-                this.totalPages.set(response.totalPages);
-                this.totalElements.set(totalAtivos);
-                this.loading.set(false);
-              }, remainingTime);
+          const isBloqueados = this.statusFilter() === 'bloqueados';
+          const filterFn = (c: any) => {
+            if (isBloqueados) {
+              return c.bloqueado === true;
             }
-          });
+            return c.ativo === true && c.bloqueado !== true;
+          };
+
+          setTimeout(() => {
+            const clientesFiltrados = response.content.filter(filterFn);
+            const clientesLimitados = clientesFiltrados.slice(0, this.pageSize);
+            this.clientesPF.set(clientesLimitados);
+            // Mantém contagem e paginação do backend para evitar requisição adicional
+            this.totalPages.set(response.totalPages);
+            this.totalElements.set(response.totalElements);
+            this.loading.set(false);
+          }, remainingTime);
         },
         error: (err: any) => {
+          // Ignora cancelamentos (status 0) que geram ERR_ABORTED ao alternar rapidamente
+          if (err?.status === 0) {
+            return;
+          }
           this.error.set('Erro ao carregar clientes. Verifique se o servidor está rodando.');
           this.loading.set(false);
           console.error('Erro ao carregar clientes:', err);
@@ -448,25 +464,28 @@ export class DashboardComponent {
           const elapsedTime = Date.now() - startTime;
           const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
 
-          // Carrega todos os clientes PJ em paralelo para contar os ativos
-          this.clienteService.listClientesPJ(0, 10000).subscribe({
-            next: (allResponse: any) => {
-              const totalAtivos = allResponse.content.filter((c: any) => c.ativo === true).length;
-
-              setTimeout(() => {
-                // Filtra apenas clientes ativos no frontend
-                const clientesAtivos = response.content.filter((c: any) => c.ativo === true);
-                // Limita ao tamanho de página solicitado pelo usuário
-                const clientesLimitados = clientesAtivos.slice(0, this.pageSize);
-                this.clientesPJ.set(clientesLimitados);
-                this.totalPages.set(response.totalPages);
-                this.totalElements.set(totalAtivos);
-                this.loading.set(false);
-              }, remainingTime);
+          const isBloqueados = this.statusFilter() === 'bloqueados';
+          const filterFn = (c: any) => {
+            if (isBloqueados) {
+              return c.bloqueado === true;
             }
-          });
+            return c.ativo === true && c.bloqueado !== true;
+          };
+
+          setTimeout(() => {
+            const clientesFiltrados = response.content.filter(filterFn);
+            const clientesLimitados = clientesFiltrados.slice(0, this.pageSize);
+            this.clientesPJ.set(clientesLimitados);
+            // Mantém contagem e paginação do backend para evitar requisição adicional
+            this.totalPages.set(response.totalPages);
+            this.totalElements.set(response.totalElements);
+            this.loading.set(false);
+          }, remainingTime);
         },
         error: (err: any) => {
+          if (err?.status === 0) {
+            return;
+          }
           this.error.set('Erro ao carregar clientes. Verifique se o servidor está rodando.');
           this.loading.set(false);
           console.error('Erro ao carregar clientes:', err);

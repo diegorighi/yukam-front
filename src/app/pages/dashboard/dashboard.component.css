@@ -690,6 +690,133 @@
   box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
 }
 
+/* Toggle de Status (Ativos/Bloqueados) */
+.status-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-label {
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.status-toggle-button {
+  position: relative;
+  width: 56px;
+  height: 32px;
+  border-radius: 16px;
+  border: 2px solid transparent;
+  background-color: #e5e5e5;
+  cursor: pointer;
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease;
+  overflow: visible;
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+.status-toggle-button .toggle-slider {
+  position: absolute;
+  top: 50%;
+  left: 2px;
+  width: 28px;
+  height: 28px;
+  background: #ffffff;
+  border-radius: 14px;
+  transform: translateY(-50%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s cubic-bezier(0.4, 0, 0.2, 1), right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2),
+              0 1px 2px rgba(0, 0, 0, 0.1);
+  will-change: transform, left, right;
+  backface-visibility: hidden;
+}
+
+.status-toggle-button .toggle-knob {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: #666;
+}
+
+.status-toggle-button .toggle-knob svg {
+  width: 16px;
+  height: 16px;
+  stroke: #1a1a2e;
+  transition: transform 0.3s ease, opacity 0.2s ease;
+}
+
+.status-toggle-button.blocked {
+  background-color: #ffe8e8;
+  border-color: rgba(255, 0, 0, 0.25);
+}
+
+.status-toggle-button.blocked .toggle-slider {
+  left: auto;
+  right: 2px;
+  transform: translateY(-50%);
+}
+
+/* Tema escuro */
+[data-theme='dark'] .status-label {
+  color: #e6e6e6;
+}
+
+[data-theme='dark'] .status-toggle-button {
+  background-color: #1a1a2e;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+[data-theme='dark'] .status-toggle-button .toggle-slider {
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2),
+              0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] .status-toggle-button .toggle-knob svg {
+  stroke: #ffffff;
+}
+
+[data-theme='dark'] .status-toggle-button.blocked {
+  background-color: #16213e;
+  border-color: rgba(255, 80, 80, 0.45);
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .status-toggle-button {
+    width: 52px;
+    height: 30px;
+    border-radius: 15px;
+  }
+
+  .status-toggle-button .toggle-slider {
+    width: 26px;
+    height: 26px;
+    border-radius: 13px;
+  }
+
+  .status-toggle-button.blocked .toggle-slider {
+    left: auto;
+    right: 2px;
+    transform: translateY(-50%);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .status-toggle-button,
+  .status-toggle-button .toggle-slider,
+  .status-toggle-button .toggle-knob svg {
+    transition: none;
+  }
+}
+
 /* Grid de Cards */
 .clientes-grid {
   display: grid;

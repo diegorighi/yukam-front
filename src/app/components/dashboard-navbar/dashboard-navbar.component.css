@@ -75,19 +75,19 @@
   left: 4px;
   width: calc(50% - 4px);
   height: calc(100% - 8px);
-  background-color: #00d9ff;
+  background-color: #ffffff;
   border-radius: 6px;
   transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease;
   z-index: 0;
-  box-shadow: 0 2px 8px rgba(0, 217, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   will-change: transform;
   backface-visibility: hidden;
   transform: translate3d(0, 0, 0);
 }
 
 [data-theme='light'] .toggle-slider {
-  background-color: #0099cc;
-  box-shadow: 0 2px 8px rgba(0, 153, 204, 0.3);
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 .toggle-slider.pj {
@@ -117,7 +117,7 @@
 }
 
 .toggle-btn:hover:not(.active) {
-  background-color: rgba(0, 217, 255, 0.05);
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 [data-theme='light'] .toggle-btn:hover:not(.active) {
