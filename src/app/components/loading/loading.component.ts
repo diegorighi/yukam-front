@@ -11,4 +11,5 @@ import { CommonModule } from '@angular/common';
 export class LoadingComponent {
   @Input() message: string = 'Carregando...';
   @Input() size: 'small' | 'medium' | 'large' = 'medium';
+  @Input() type: 'dots' | 'progress-bar' = 'dots';
 }

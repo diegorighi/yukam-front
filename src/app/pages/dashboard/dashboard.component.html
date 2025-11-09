@@ -43,6 +43,7 @@
           <svg *ngIf="sidebarOpen()" class="collapse-icon" [class.expanded]="isMenuExpanded('clientes')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="6 9 12 15 18 9"></polyline>
           </svg>
+          <span class="category-tooltip" *ngIf="!sidebarOpen()">Clientes {{ tipoPessoa }}</span>
         </div>
         <div class="category-items" [class.show]="sidebarOpen() && isMenuExpanded('clientes')" *ngIf="sidebarOpen()">
           <button
@@ -132,6 +133,7 @@
           <svg *ngIf="sidebarOpen()" class="collapse-icon" [class.expanded]="isMenuExpanded('relatorios')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="6 9 12 15 18 9"></polyline>
           </svg>
+          <span class="category-tooltip" *ngIf="!sidebarOpen()">Relatórios</span>
         </div>
         <div class="category-items" [class.show]="sidebarOpen() && isMenuExpanded('relatorios')" *ngIf="sidebarOpen()">
           <button
@@ -310,6 +312,7 @@
           <svg *ngIf="sidebarOpen()" class="collapse-icon" [class.expanded]="isMenuExpanded('financeiro')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="6 9 12 15 18 9"></polyline>
           </svg>
+          <span class="category-tooltip" *ngIf="!sidebarOpen()">Financeiro</span>
         </div>
         <div class="category-items" [class.show]="sidebarOpen() && isMenuExpanded('financeiro')" *ngIf="sidebarOpen()">
           <p class="coming-soon">Em breve...</p>
@@ -329,6 +332,7 @@
           <svg *ngIf="sidebarOpen()" class="collapse-icon" [class.expanded]="isMenuExpanded('configuracoes')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="6 9 12 15 18 9"></polyline>
           </svg>
+          <span class="category-tooltip" *ngIf="!sidebarOpen()">Configurações</span>
         </div>
         <div class="category-items" [class.show]="sidebarOpen() && isMenuExpanded('configuracoes')" *ngIf="sidebarOpen()">
           <p class="coming-soon">Em breve...</p>
@@ -349,6 +353,7 @@
           <svg *ngIf="sidebarOpen()" class="collapse-icon" [class.expanded]="isMenuExpanded('ajuda')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="6 9 12 15 18 9"></polyline>
           </svg>
+          <span class="category-tooltip" *ngIf="!sidebarOpen()">Ajuda</span>
         </div>
         <div class="category-items" [class.show]="sidebarOpen() && isMenuExpanded('ajuda')" *ngIf="sidebarOpen()">
           <p class="coming-soon">Em breve...</p>
@@ -614,11 +619,11 @@
 
       <!-- Preloader -->
       <div *ngIf="isLoadingLeads()" class="report-loading">
-        <app-loading message="Carregando dados de leads..." size="large"></app-loading>
+        <app-loading message="Carregando dados de leads..." size="large" type="progress-bar"></app-loading>
       </div>
 
       <!-- Conteúdo do relatório -->
-      <div *ngIf="!isLoadingLeads() && leadsData.length > 0" class="report-container">
+      <div class="report-container" [style.display]="!isLoadingLeads() && leadsData.length > 0 ? 'block' : 'none'">
         <div class="chart-card">
           <h3 class="chart-title">Distribuição de Leads por Origem</h3>
           <div class="chart-wrapper">

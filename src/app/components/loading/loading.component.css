@@ -66,11 +66,16 @@
 }
 
 .loading-message {
-  color: #1a1a2e;
+  color: rgba(255, 255, 255, 0.9);
   font-size: 0.9rem;
   font-weight: 500;
   margin: 0;
   margin-top: 0.5rem;
+}
+
+/* Light theme support */
+[data-theme='light'] .loading-message {
+  color: #1a1a2e;
 }
 
 .loading-container.small .loading-message {
@@ -79,4 +84,72 @@
 
 .loading-container.large .loading-message {
   font-size: 1.1rem;
+}
+
+/* Progress Bar Styles */
+.progress-bar-container {
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 1rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background-color: rgba(0, 217, 255, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00d9ff 0%, #00b8d4 50%, #00d9ff 100%);
+  background-size: 200% 100%;
+  border-radius: 10px;
+  animation: progressLoad 2s ease-in-out infinite, progressShine 1.5s linear infinite;
+  box-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+}
+
+@keyframes progressLoad {
+  0% {
+    width: 0%;
+  }
+  50% {
+    width: 70%;
+  }
+  100% {
+    width: 95%;
+  }
+}
+
+@keyframes progressShine {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Tamanhos da barra de progresso */
+.loading-container.small .progress-bar {
+  height: 4px;
+}
+
+.loading-container.medium .progress-bar {
+  height: 6px;
+}
+
+.loading-container.large .progress-bar {
+  height: 8px;
+}
+
+/* Light theme support para barra de progresso */
+[data-theme='light'] .progress-bar {
+  background-color: rgba(26, 26, 46, 0.1);
+}
+
+[data-theme='light'] .progress-bar-fill {
+  box-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
 }

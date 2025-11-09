@@ -33,11 +33,6 @@
 .logo-image {
   width: 36px;
   height: 36px;
-  transition: transform 0.3s ease;
-}
-
-.navbar-logo a:hover .logo-image {
-  transform: rotate(360deg);
 }
 
 .logo-text {

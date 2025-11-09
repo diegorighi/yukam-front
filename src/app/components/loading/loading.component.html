@@ -1,4 +1,13 @@
 <div class="loading-container" [ngClass]="size">
-  <span class="loader"></span>
+  <!-- Loader com dots (padrão) -->
+  <span *ngIf="type === 'dots'" class="loader"></span>
+
+  <!-- Loader com barra de progresso -->
+  <div *ngIf="type === 'progress-bar'" class="progress-bar-container">
+    <div class="progress-bar">
+      <div class="progress-bar-fill"></div>
+    </div>
+  </div>
+
   <p class="loading-message">{{ message }}</p>
 </div>

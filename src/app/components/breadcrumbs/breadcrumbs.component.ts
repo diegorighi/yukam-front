@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
@@ -13,7 +13,8 @@ export interface Breadcrumb {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './breadcrumbs.component.html',
-  styleUrl: './breadcrumbs.component.css'
+  styleUrl: './breadcrumbs.component.css',
+  encapsulation: ViewEncapsulation.None
 })
 export class BreadcrumbsComponent {
   @Input() breadcrumbs: Breadcrumb[] = [];

@@ -1,0 +1,124 @@
+.theme-toggle-container {
+  display: inline-flex;
+  align-items: center;
+}
+
+.theme-toggle-button {
+  position: relative;
+  width: 56px;
+  height: 32px;
+  background: #e5e5e5;
+  border: 2px solid transparent;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease;
+  padding: 0;
+  overflow: visible;
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+.theme-toggle-button:hover {
+  background: #d1d1d1;
+}
+
+.theme-toggle-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3);
+}
+
+.theme-toggle-button:active {
+  transform: scale(0.98);
+}
+
+/* Dark mode state */
+.theme-toggle-button.dark {
+  background: #1a1a2e;
+  border-color: rgba(0, 217, 255, 0.3);
+}
+
+.theme-toggle-button.dark:hover {
+  background: #16213e;
+  border-color: rgba(0, 217, 255, 0.5);
+}
+
+.toggle-slider {
+  position: absolute;
+  top: 50%;
+  left: 2px;
+  width: 28px;
+  height: 28px;
+  background: white;
+  border-radius: 14px;
+  transform: translateY(-50%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2),
+              0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Move slider to the right when dark */
+.theme-toggle-button.dark .toggle-slider {
+  transform: translateX(23px) translateY(-50%);
+}
+
+.toggle-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: #666;
+  transition: color 0.3s ease;
+}
+
+.theme-toggle-button.dark .toggle-icon {
+  color: #00d9ff;
+}
+
+/* Animation for icon transition */
+.toggle-icon svg {
+  transition: transform 0.3s ease, opacity 0.2s ease;
+}
+
+/* Ajuste fino: no modo dark o ícone da lua afasta 2px da borda */
+.theme-toggle-button.dark .toggle-icon svg {
+  transform: translateX(-2px);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .theme-toggle-button {
+    width: 52px;
+    height: 30px;
+    border-radius: 15px;
+  }
+
+  .toggle-slider {
+    width: 26px;
+    height: 26px;
+    border-radius: 13px;
+  }
+
+  .theme-toggle-button.dark .toggle-slider {
+    transform: translateX(21px) translateY(-50%);
+  }
+}
+
+/* Accessibility - high contrast mode */
+@media (prefers-contrast: high) {
+  .theme-toggle-button {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle-button,
+  .toggle-slider,
+  .toggle-icon svg {
+    transition: none;
+  }
+}

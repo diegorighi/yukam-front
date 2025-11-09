@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, signal } from '@angular/core';
+import { Component, ViewChild, ElementRef, signal, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DashboardNavbarComponent } from '../../components/dashboard-navbar/dashboard-navbar.component';
@@ -40,7 +40,8 @@ interface LeadSource {
   standalone: true,
   imports: [CommonModule, FormsModule, DashboardNavbarComponent, LoadingComponent, BreadcrumbsComponent],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css'
+  styleUrl: './dashboard.component.css',
+  encapsulation: ViewEncapsulation.None
 })
 export class DashboardComponent {
   @ViewChild(DashboardNavbarComponent) navbar!: DashboardNavbarComponent;
@@ -74,12 +75,12 @@ export class DashboardComponent {
   // Ação ativa no menu
   activeAction: ActionType = null;
 
-  // Estado do menu lateral (hamburger)
-  sidebarOpen = signal(true);
+  // Estado do menu lateral (hamburger) — inicia fechado
+  sidebarOpen = signal(false);
 
-  // Estado de collapse dos menus pai
+  // Estado de collapse dos menus pai — todos iniciam fechados
   menuStates = signal<{[key: string]: boolean}>({
-    clientes: true,
+    clientes: false,
     relatorios: false,
     financeiro: false,
     configuracoes: false,
@@ -872,12 +873,43 @@ export class DashboardComponent {
       // Processa os dados de origemLead
       this.processLeadsData(clientesAtivos);
 
-      // Inicializa o gráfico após processar os dados
-      setTimeout(() => this.initLeadsChart(), 100);
+      // Espera o próximo ciclo de detecção de mudanças do Angular
+      setTimeout(() => {
+        this.renderLeadsChartWithRetry();
+      }, 100);
     } catch (error) {
       console.error('Erro ao carregar dados de leads:', error);
       this.error.set('Erro ao carregar dados de leads. Verifique se o servidor está rodando.');
-    } finally {
+      this.isLoadingLeads.set(false);
+    }
+  }
+
+  // Método auxiliar para renderizar o gráfico com retry e callback
+  private renderLeadsChartWithRetry(attempt: number = 0): void {
+    const maxAttempts = 20;
+
+    if (this.leadsChartCanvas?.nativeElement) {
+      console.log('Chart element found, rendering...');
+
+      // Desliga o loading ANTES de inicializar o gráfico
+      // Isso permite que o usuário veja a animação gradual (clockwise fill)
+      setTimeout(() => {
+        this.isLoadingLeads.set(false);
+
+        // Renderiza o gráfico logo após o loading desaparecer
+        // O pequeno delay garante que a transição CSS do loading termine
+        setTimeout(() => {
+          this.initLeadsChart();
+        }, 100);
+      }, 300);
+    } else if (attempt < maxAttempts) {
+      console.log(`Chart element not found, attempt ${attempt + 1}/${maxAttempts}`);
+      setTimeout(() => {
+        this.renderLeadsChartWithRetry(attempt + 1);
+      }, 200);
+    } else {
+      console.error('Chart element not found after maximum attempts');
+      this.error.set('Erro ao renderizar gráfico. Elemento não encontrado.');
       this.isLoadingLeads.set(false);
     }
   }
@@ -961,14 +993,14 @@ export class DashboardComponent {
         animations: {
           enabled: true,
           easing: 'easeinout',
-          speed: 800,
+          speed: 1200,
           animateGradually: {
             enabled: true,
-            delay: 150
+            delay: 200
           },
           dynamicAnimation: {
             enabled: true,
-            speed: 350
+            speed: 400
           }
         },
         background: 'transparent',
@@ -978,6 +1010,9 @@ export class DashboardComponent {
       colors: this.leadsData.map(item => item.color),
       plotOptions: {
         pie: {
+          startAngle: 0,
+          endAngle: 360,
+          expandOnClick: true,
           donut: {
             size: '65%',
             labels: {

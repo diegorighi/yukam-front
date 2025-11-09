@@ -70,6 +70,44 @@
   fill: none;
 }
 
+/* ==================== DARK THEME ==================== */
+[data-theme='dark'] .breadcrumbs {
+  background-color: #1a1a2e;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='dark'] .breadcrumb-item {
+  color: #a0a0a0;
+}
+
+[data-theme='dark'] .breadcrumb-item.active {
+  color: #00d9ff;
+}
+
+[data-theme='dark'] .breadcrumb-separator {
+  color: #4a5568;
+}
+
+/* ==================== LIGHT THEME ==================== */
+[data-theme='light'] .breadcrumbs {
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e0e0e0;
+}
+
+[data-theme='light'] .breadcrumb-item {
+  color: #6b7280;
+}
+
+[data-theme='light'] .breadcrumb-item.active {
+  color: #0099cc;
+}
+
+[data-theme='light'] .breadcrumb-separator {
+  color: #d1d5db;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .breadcrumbs {
