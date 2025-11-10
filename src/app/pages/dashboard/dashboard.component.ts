@@ -8,6 +8,7 @@ import { ClienteService } from '../../services/cliente.service';
 import { ClientePF, ClientePJ, TipoPessoa } from '../../models/cliente.model';
 import { UserService } from '../../services/user.service';
 import { UserResponse } from '../../models/user.model';
+import { AuthService } from '../../services/auth.service';
 import ApexCharts from 'apexcharts';
 import { firstValueFrom, of, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -152,7 +153,8 @@ export class DashboardComponent implements OnDestroy {
   constructor(
     private clienteService: ClienteService,
     private userService: UserService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService
   ) {}
 
   // Define/atualiza intervalo de auto-reload
@@ -221,6 +223,80 @@ export class DashboardComponent implements OnDestroy {
   // Verifica se um menu está expandido
   isMenuExpanded(menuKey: string): boolean {
     return this.menuStates()[menuKey];
+  }
+
+  // ==================== CONTROLE DE ACESSO POR ROLE ====================
+
+  /**
+   * ADMIN: Acesso total a todos os menus
+   * @returns true se usuário tem ROLE_ADMIN
+   */
+  isAdmin(): boolean {
+    return this.authService.hasRole('ROLE_ADMIN');
+  }
+
+  /**
+   * Listar todos os clientes
+   * Permitido para: ADMIN, ANALISTA
+   */
+  canAccessListAll(): boolean {
+    return this.authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_ANALISTA']);
+  }
+
+  /**
+   * Buscar por CPF/CNPJ
+   * Permitido para: ADMIN, FUNCIONARIO
+   */
+  canAccessSearchByCpfCnpj(): boolean {
+    return this.authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_FUNCIONARIO']);
+  }
+
+  /**
+   * Buscar por UUID
+   * Permitido para: ADMIN, FUNCIONARIO
+   */
+  canAccessSearchByUuid(): boolean {
+    return this.authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_FUNCIONARIO']);
+  }
+
+  /**
+   * Acesso aos relatórios
+   * Permitido para: ADMIN, ANALISTA
+   */
+  canAccessReports(): boolean {
+    return this.authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_ANALISTA']);
+  }
+
+  /**
+   * Acesso ao Financeiro
+   * Permitido para: ADMIN, ANALISTA
+   */
+  canAccessFinanceiro(): boolean {
+    return this.authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_ANALISTA']);
+  }
+
+  /**
+   * Reset de Senha
+   * Permitido para: ADMIN, FUNCIONARIO
+   */
+  canAccessPasswordReset(): boolean {
+    return this.authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_FUNCIONARIO']);
+  }
+
+  /**
+   * Acesso à categoria Clientes (toda a categoria)
+   * Permitido para: ADMIN, ANALISTA, FUNCIONARIO
+   */
+  canAccessClientes(): boolean {
+    return this.authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_ANALISTA', 'ROLE_FUNCIONARIO']);
+  }
+
+  /**
+   * Acesso à categoria Configurações
+   * Permitido para: ADMIN, FUNCIONARIO (já que só tem Password Reset)
+   */
+  canAccessConfiguracoes(): boolean {
+    return this.authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_FUNCIONARIO']);
   }
 
   // Reage à mudança de tipo de pessoa no navbar

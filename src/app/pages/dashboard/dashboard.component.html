@@ -31,7 +31,7 @@
 
     <nav class="sidebar-menu">
       <!-- Gerenciamento de Clientes -->
-      <div class="menu-category">
+      <div class="menu-category" *ngIf="canAccessClientes()">
         <div class="category-header" (click)="onCategoryHeaderClick('clientes')">
           <span class="category-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -49,6 +49,7 @@
         </div>
         <div class="category-items" [class.show]="sidebarOpen() && isMenuExpanded('clientes')" *ngIf="sidebarOpen()">
           <button
+            *ngIf="canAccessListAll()"
             class="menu-item"
             [class.active]="activeAction === 'list'"
             (click)="setActiveAction('list')">
@@ -66,6 +67,7 @@
           </button>
 
           <button
+            *ngIf="canAccessSearchByCpfCnpj()"
             class="menu-item"
             [class.active]="activeAction === 'searchByCpfCnpj'"
             (click)="setActiveAction('searchByCpfCnpj')">
@@ -79,6 +81,7 @@
           </button>
 
           <button
+            *ngIf="canAccessSearchByUuid()"
             class="menu-item"
             [class.active]="activeAction === 'searchByUuid'"
             (click)="setActiveAction('searchByUuid')">
@@ -122,7 +125,7 @@
       </div>
 
       <!-- Relatórios -->
-      <div class="menu-category">
+      <div class="menu-category" *ngIf="canAccessReports()">
         <div class="category-header" (click)="onCategoryHeaderClick('relatorios')">
           <span class="category-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -302,7 +305,7 @@
       </div>
 
       <!-- Financeiro -->
-      <div class="menu-category">
+      <div class="menu-category" *ngIf="canAccessFinanceiro()">
         <div class="category-header" (click)="onCategoryHeaderClick('financeiro')">
           <span class="category-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -322,7 +325,7 @@
       </div>
 
       <!-- Configurações -->
-      <div class="menu-category">
+      <div class="menu-category" *ngIf="canAccessConfiguracoes()">
         <div class="category-header" (click)="onCategoryHeaderClick('configuracoes')">
           <span class="category-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -347,6 +350,7 @@
         </div>
         <div class="category-items" [class.show]="sidebarOpen() && isMenuExpanded('configuracoes')" *ngIf="sidebarOpen()">
           <button
+            *ngIf="canAccessPasswordReset()"
             class="menu-item"
             [class.active]="activeAction === 'passwordReset'"
             (click)="setActiveAction('passwordReset')">
