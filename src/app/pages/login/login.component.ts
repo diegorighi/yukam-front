@@ -44,7 +44,7 @@ export class LoginComponent {
   showPassword = signal<boolean>(false);
 
   // Reactive form
-  loginForm: FormGroup;
+  loginForm!: FormGroup;
 
   constructor() {
     // Inicializar formulário SEMPRE (necessário para TypeScript strict mode)
