@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste de Login Flow - Yukam</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 800px;
+      width: 100%;
+      padding: 40px;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .section {
+      margin-bottom: 30px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+    }
+
+    .section h2 {
+      color: #333;
+      font-size: 18px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section p {
+      color: #555;
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin: 5px;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button.secondary {
+      background: #6c757d;
+    }
+
+    button.danger {
+      background: #dc3545;
+    }
+
+    button.success {
+      background: #28a745;
+    }
+
+    .code {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 15px;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      overflow-x: auto;
+      margin: 10px 0;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+
+    .status.ok {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .status.warning {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    #output {
+      margin-top: 20px;
+      padding: 15px;
+      background: #e9ecef;
+      border-radius: 8px;
+      min-height: 100px;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .log-entry {
+      margin: 5px 0;
+      padding: 5px;
+      border-left: 3px solid #667eea;
+      padding-left: 10px;
+    }
+
+    .log-success {
+      border-left-color: #28a745;
+      background: #d4edda;
+    }
+
+    .log-error {
+      border-left-color: #dc3545;
+      background: #f8d7da;
+    }
+
+    .log-warning {
+      border-left-color: #ffc107;
+      background: #fff3cd;
+    }
+
+    .instruction {
+      background: #e7f3ff;
+      border-left: 4px solid #2196f3;
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 4px;
+    }
+
+    .instruction strong {
+      color: #1976d2;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Teste de Login Flow</h1>
+    <p class="subtitle">Ferramentas para testar as correções do problema "não tem role"</p>
+
+    <div class="instruction">
+      <strong>📋 Instruções:</strong> Use os botões abaixo para simular diferentes cenários de autenticação.
+      Abra o DevTools (F12) no console para ver logs detalhados.
+    </div>
+
+    <div class="section">
+      <h2>
+        1️⃣ Testes de localStorage
+        <span id="storage-status" class="status warning">Não testado</span>
+      </h2>
+      <p>Simule diferentes estados de dados no localStorage:</p>
+      <button onclick="clearStorage()">🗑️ Limpar localStorage</button>
+      <button onclick="setValidUser()" class="success">✅ Usuário Válido (ADMIN)</button>
+      <button onclick="setUserNoRoles()" class="danger">❌ Usuário SEM Roles</button>
+      <button onclick="setUserInvalidRole()" class="danger">❌ Usuário com ROLE_CLIENTE</button>
+      <button onclick="setCorruptedData()" class="danger">💥 Dados Corrompidos</button>
+    </div>
+
+    <div class="section">
+      <h2>
+        2️⃣ Verificar Estado Atual
+        <span id="check-status" class="status warning">Não verificado</span>
+      </h2>
+      <p>Verifique o estado atual do localStorage:</p>
+      <button onclick="checkCurrentState()" class="secondary">🔍 Verificar Estado</button>
+      <button onclick="openApp()">🚀 Abrir Aplicação</button>
+    </div>
+
+    <div class="section">
+      <h2>
+        3️⃣ Testes de Fluxo Completo
+        <span id="flow-status" class="status warning">Não testado</span>
+      </h2>
+      <p>Teste os fluxos de navegação:</p>
+      <button onclick="testLoginFlow()">🧪 Testar Fluxo de Login</button>
+      <button onclick="testDashboardAccess()">🧪 Testar Acesso ao Dashboard</button>
+    </div>
+
+    <div id="output">
+      <div class="log-entry">📊 Console de testes - Aguardando ações...</div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'yukam_auth_user';
+    let output = document.getElementById('output');
+
+    function log(message, type = 'info') {
+      const timestamp = new Date().toLocaleTimeString();
+      const entry = document.createElement('div');
+      entry.className = `log-entry log-${type}`;
+      entry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+      output.appendChild(entry);
+      output.scrollTop = output.scrollHeight;
+      console.log(`[${timestamp}] ${message}`);
+    }
+
+    function clearLog() {
+      output.innerHTML = '';
+    }
+
+    function clearStorage() {
+      localStorage.clear();
+      log('✅ localStorage limpo com sucesso', 'success');
+      document.getElementById('storage-status').textContent = 'Limpo';
+      document.getElementById('storage-status').className = 'status ok';
+    }
+
+    function setValidUser() {
+      const validUser = {
+        publicId: "550e8400-e29b-41d4-a716-446655440000",
+        login: "admin",
+        email: "admin@yukam.com",
+        theme: "light",
+        twoFactorEnabled: false,
+        roles: ["ROLE_ADMIN", "ROLE_ANALISTA"]
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(validUser));
+      log('✅ Usuário VÁLIDO configurado: admin com ROLE_ADMIN', 'success');
+      log(`📋 Dados: ${JSON.stringify(validUser, null, 2)}`);
+      document.getElementById('storage-status').textContent = 'Usuário válido';
+      document.getElementById('storage-status').className = 'status ok';
+    }
+
+    function setUserNoRoles() {
+      const invalidUser = {
+        publicId: "550e8400-e29b-41d4-a716-446655440000",
+        login: "testuser",
+        email: "test@yukam.com",
+        theme: "light",
+        twoFactorEnabled: false,
+        roles: [] // ❌ SEM ROLES
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(invalidUser));
+      log('❌ Usuário SEM ROLES configurado (dados inválidos)', 'error');
+      log(`📋 Dados: ${JSON.stringify(invalidUser, null, 2)}`);
+      log('⚠️ Esperado: AuthService deve limpar esses dados ao recarregar', 'warning');
+      document.getElementById('storage-status').textContent = 'Inválido (sem roles)';
+      document.getElementById('storage-status').className = 'status error';
+    }
+
+    function setUserInvalidRole() {
+      const clientUser = {
+        publicId: "550e8400-e29b-41d4-a716-446655440000",
+        login: "cliente",
+        email: "cliente@yukam.com",
+        theme: "light",
+        twoFactorEnabled: false,
+        roles: ["ROLE_CLIENTE"] // ❌ ROLE_CLIENTE não pode acessar dashboard
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(clientUser));
+      log('❌ Usuário com ROLE_CLIENTE configurado (não permitido no dashboard)', 'error');
+      log(`📋 Dados: ${JSON.stringify(clientUser, null, 2)}`);
+      log('⚠️ Esperado: staffGuard deve bloquear acesso ao /dashboard', 'warning');
+      document.getElementById('storage-status').textContent = 'Role não permitida';
+      document.getElementById('storage-status').className = 'status error';
+    }
+
+    function setCorruptedData() {
+      localStorage.setItem(STORAGE_KEY, '{invalid json data');
+      log('💥 Dados CORROMPIDOS configurados no localStorage', 'error');
+      log('⚠️ Esperado: AuthService deve detectar erro de parse e limpar', 'warning');
+      document.getElementById('storage-status').textContent = 'Dados corrompidos';
+      document.getElementById('storage-status').className = 'status error';
+    }
+
+    function checkCurrentState() {
+      clearLog();
+      const storedData = localStorage.getItem(STORAGE_KEY);
+
+      if (!storedData) {
+        log('ℹ️ localStorage está VAZIO (sem dados de autenticação)', 'warning');
+        document.getElementById('check-status').textContent = 'Vazio';
+        document.getElementById('check-status').className = 'status warning';
+        return;
+      }
+
+      try {
+        const user = JSON.parse(storedData);
+        log('✅ Dados encontrados no localStorage:', 'success');
+        log(`📋 publicId: ${user.publicId || '❌ AUSENTE'}`);
+        log(`📋 login: ${user.login || '❌ AUSENTE'}`);
+        log(`📋 email: ${user.email || 'null'}`);
+        log(`📋 roles: ${user.roles ? JSON.stringify(user.roles) : '❌ AUSENTE'}`);
+
+        // Validação
+        const isValid = user.publicId && user.login && Array.isArray(user.roles) && user.roles.length > 0;
+        if (isValid) {
+          log('✅ Dados são VÁLIDOS', 'success');
+          document.getElementById('check-status').textContent = 'Dados válidos';
+          document.getElementById('check-status').className = 'status ok';
+        } else {
+          log('❌ Dados são INVÁLIDOS (devem ser limpos ao recarregar)', 'error');
+          document.getElementById('check-status').textContent = 'Dados inválidos';
+          document.getElementById('check-status').className = 'status error';
+        }
+      } catch (error) {
+        log('💥 Erro ao fazer parse dos dados (JSON corrompido)', 'error');
+        log(`Erro: ${error.message}`);
+        document.getElementById('check-status').textContent = 'JSON inválido';
+        document.getElementById('check-status').className = 'status error';
+      }
+    }
+
+    function openApp() {
+      window.open('http://localhost:4200', '_blank');
+      log('🚀 Abrindo aplicação em nova aba...', 'success');
+      log('💡 Dica: Abra o DevTools (F12) na nova aba para ver os logs', 'warning');
+    }
+
+    function testLoginFlow() {
+      clearLog();
+      log('🧪 Iniciando teste de FLUXO DE LOGIN...', 'success');
+      log('');
+      log('📋 CENÁRIO: Usuário clica em "Login" na landing page', 'warning');
+      log('');
+      log('✅ PASSO 1: Limpar localStorage');
+      clearStorage();
+      log('');
+      log('✅ PASSO 2: Abrir landing page (http://localhost:4200)');
+      setTimeout(() => {
+        window.open('http://localhost:4200', '_blank');
+        log('');
+        log('✅ PASSO 3: Clicar no botão "Login" no navbar');
+        log('');
+        log('📊 RESULTADO ESPERADO:', 'success');
+        log('  1. Deve navegar para /login');
+        log('  2. LoginComponent deve carregar');
+        log('  3. Formulário de login deve aparecer');
+        log('  4. NÃO deve haver erro de "não tem role"');
+        log('');
+        log('💡 Execute estes passos manualmente na nova aba', 'warning');
+        document.getElementById('flow-status').textContent = 'Em andamento';
+        document.getElementById('flow-status').className = 'status warning';
+      }, 500);
+    }
+
+    function testDashboardAccess() {
+      clearLog();
+      log('🧪 Iniciando teste de ACESSO AO DASHBOARD...', 'success');
+      log('');
+      log('📋 CENÁRIO: Usuário tenta acessar dashboard sem autenticação', 'warning');
+      log('');
+      log('✅ PASSO 1: Limpar localStorage');
+      clearStorage();
+      log('');
+      log('✅ PASSO 2: Tentar acessar /dashboard diretamente');
+      setTimeout(() => {
+        window.open('http://localhost:4200/dashboard', '_blank');
+        log('');
+        log('📊 RESULTADO ESPERADO:', 'success');
+        log('  1. authGuard deve bloquear acesso');
+        log('  2. Deve redirecionar para /login');
+        log('  3. Console deve mostrar: "authGuard: Usuário não autenticado"');
+        log('');
+        log('💡 Verifique o console na nova aba', 'warning');
+      }, 500);
+    }
+
+    // Log inicial
+    log('🎯 Ferramenta de testes carregada', 'success');
+    log('💡 Use os botões acima para simular diferentes cenários', 'warning');
+  </script>
+</body>
+</html>

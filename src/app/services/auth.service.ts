@@ -126,7 +126,14 @@ export class AuthService {
     if (storedUser) {
       try {
         const user = JSON.parse(storedUser) as UserResponse;
-        this.currentUser.set(user);
+
+        // Validar dados essenciais antes de carregar
+        if (user && user.publicId && user.login && Array.isArray(user.roles) && user.roles.length > 0) {
+          this.currentUser.set(user);
+        } else {
+          console.warn('Dados de usuário inválidos no localStorage. Limpando...');
+          localStorage.removeItem(this.STORAGE_KEY);
+        }
       } catch (error) {
         console.error('Erro ao carregar usuário do localStorage:', error);
         localStorage.removeItem(this.STORAGE_KEY);

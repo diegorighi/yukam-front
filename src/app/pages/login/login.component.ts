@@ -56,8 +56,8 @@ export class LoginComponent {
     // Capturar returnUrl da query string (se houver)
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
 
-    // Redirect se já estiver autenticado
-    if (this.authService.isAuthenticated()) {
+    // Redirect se já estiver autenticado E tiver roles válidas
+    if (this.authService.isAuthenticated() && this.authService.getUserRoles().length > 0) {
       this.router.navigateByUrl(this.returnUrl);
     }
   }

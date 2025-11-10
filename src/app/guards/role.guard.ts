@@ -22,7 +22,16 @@ export function roleGuard(allowedRoles: string[]): CanActivateFn {
 
     // Primeiro verificar se está autenticado
     if (!authService.isAuthenticated()) {
+      console.log('RoleGuard: Usuário não autenticado. Redirecionando para /login');
       router.navigate(['/login']);
+      return false;
+    }
+
+    // Verificar se o usuário tem roles válidas
+    const userRoles = authService.getUserRoles();
+    if (!userRoles || userRoles.length === 0) {
+      console.error('RoleGuard: Usuário autenticado mas sem roles válidas. Fazendo logout...');
+      authService.logout();
       return false;
     }
 
@@ -31,9 +40,10 @@ export function roleGuard(allowedRoles: string[]): CanActivateFn {
       return true;
     }
 
-    // Não tem permissão - redirecionar para dashboard com mensagem
+    // Não tem permissão - redirecionar para landing page (não dashboard)
     console.warn(`Acesso negado: usuário não possui nenhuma das roles: ${allowedRoles.join(', ')}`);
-    router.navigate(['/dashboard'], {
+    console.warn(`Roles do usuário: ${userRoles.join(', ')}`);
+    router.navigate(['/'], {
       queryParams: { error: 'forbidden' }
     });
 
