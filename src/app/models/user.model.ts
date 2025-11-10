@@ -8,6 +8,25 @@ export interface UserResponse {
   email: string | null;
   theme: string;
   twoFactorEnabled: boolean;
+  roles: string[]; // Array de roles (e.g., ["ROLE_ADMIN", "ROLE_CLIENTE"])
+}
+
+/**
+ * Login Request
+ * Payload para autenticação
+ */
+export interface LoginRequest {
+  login: string;
+  password: string;
+}
+
+/**
+ * Auth State
+ * Estado de autenticação do usuário
+ */
+export interface AuthState {
+  user: UserResponse | null;
+  isAuthenticated: boolean;
 }
 
 /**
