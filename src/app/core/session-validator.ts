@@ -1,4 +1,3 @@
-import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 
 /**
@@ -13,9 +12,8 @@ import { AuthService } from '../services/auth.service';
  * - Limpa automaticamente dados incompatíveis
  * - Previne erros de autenticação no bootstrap da aplicação
  */
-export function validateSessionOnStartup() {
+export function validateSessionOnStartup(authService: AuthService) {
   return () => {
-    const authService = inject(AuthService);
 
     console.log('[Session Validator] Validando sessão ao iniciar aplicação...');
 
