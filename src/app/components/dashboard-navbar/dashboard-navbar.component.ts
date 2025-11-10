@@ -1,4 +1,4 @@
-import { Component, signal, Output, EventEmitter, ViewEncapsulation } from '@angular/core';
+import { Component, signal, Output, EventEmitter, ViewEncapsulation, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TipoPessoa } from '../../models/cliente.model';
 import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component';
@@ -15,8 +15,12 @@ export class DashboardNavbarComponent {
   tipoPessoa = signal<TipoPessoa>('PF');
 
   @Output() tipoPessoaChange = new EventEmitter<TipoPessoa>();
+  @Input() disableTipoPessoa = false;
 
   setTipoPessoa(tipo: TipoPessoa) {
+    if (this.disableTipoPessoa) {
+      return;
+    }
     this.tipoPessoa.set(tipo);
     this.tipoPessoaChange.emit(tipo);
   }

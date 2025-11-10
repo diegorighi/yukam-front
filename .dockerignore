@@ -1,0 +1,39 @@
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Angular
+/dist
+/.angular
+.angular/cache
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Testing
+/coverage
+*.spec.ts
+
+# Documentation
+README.md
+CLAUDE.md
+*.md
+
+# Environment
+.env
+.env.local
+.env.*.local
