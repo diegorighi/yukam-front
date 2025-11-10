@@ -2,7 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap, catchError, throwError } from 'rxjs';
-import { UserResponse, LoginRequest } from '../models/user.model';
+import { UserResponse, LoginRequest, StoredAuthData } from '../models/user.model';
 
 /**
  * Authentication Service
@@ -17,6 +17,7 @@ import { UserResponse, LoginRequest } from '../models/user.model';
 export class AuthService {
   private readonly baseUrl = '/api/auth';
   private readonly STORAGE_KEY = 'yukam_auth_user';
+  private readonly STORAGE_VERSION = '1.0.0'; // Versão do schema de dados
 
   // Signal para gerenciar estado de autenticação de forma reativa
   currentUser = signal<UserResponse | null>(null);
@@ -39,9 +40,17 @@ export class AuthService {
   login(credentials: LoginRequest): Observable<UserResponse> {
     return this.http.post<UserResponse>(`${this.baseUrl}/login`, credentials).pipe(
       tap(user => {
-        // Salvar usuário no signal e localStorage
+        // Salvar usuário no signal e localStorage com versionamento
         this.currentUser.set(user);
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(user));
+
+        const dataToStore: StoredAuthData = {
+          version: this.STORAGE_VERSION,
+          user: user,
+          timestamp: Date.now()
+        };
+
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(dataToStore));
+        console.log(`[AuthService] Sessão salva com versão ${this.STORAGE_VERSION}`);
       }),
       catchError(error => {
         console.error('Login falhou:', error);
@@ -61,11 +70,35 @@ export class AuthService {
   }
 
   /**
+   * Força limpeza completa de autenticação
+   * Útil para resolver estados corrompidos
+   */
+  clearAuthState(): void {
+    console.log('Limpando estado de autenticação...');
+    this.currentUser.set(null);
+    localStorage.removeItem(this.STORAGE_KEY);
+  }
+
+  /**
    * Verifica se o usuário está autenticado
-   * @returns boolean - true se usuário está logado
+   * @returns boolean - true se usuário está logado COM DADOS VÁLIDOS
    */
   isAuthenticated(): boolean {
-    return this.currentUser() !== null;
+    const user = this.currentUser();
+
+    // Verificação robusta: usuário deve ter publicId, login E roles válidas
+    if (!user || !user.publicId || !user.login) {
+      return false;
+    }
+
+    // CRÍTICO: Usuário DEVE ter pelo menos uma role válida
+    if (!Array.isArray(user.roles) || user.roles.length === 0) {
+      console.error('ERRO: Usuário sem roles válidas detectado. Limpando sessão...');
+      this.logout();
+      return false;
+    }
+
+    return true;
   }
 
   /**
@@ -120,25 +153,131 @@ export class AuthService {
   /**
    * Carrega dados do usuário do localStorage
    * Chamado automaticamente ao inicializar o serviço
+   *
+   * Sistema de versionamento:
+   * - Valida versão do schema antes de carregar
+   * - Tenta migrar dados antigos se possível
+   * - Limpa automaticamente dados incompatíveis
    */
   private loadUserFromStorage(): void {
-    const storedUser = localStorage.getItem(this.STORAGE_KEY);
-    if (storedUser) {
-      try {
-        const user = JSON.parse(storedUser) as UserResponse;
-
-        // Validar dados essenciais antes de carregar
-        if (user && user.publicId && user.login && Array.isArray(user.roles) && user.roles.length > 0) {
-          this.currentUser.set(user);
-        } else {
-          console.warn('Dados de usuário inválidos no localStorage. Limpando...');
-          localStorage.removeItem(this.STORAGE_KEY);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar usuário do localStorage:', error);
-        localStorage.removeItem(this.STORAGE_KEY);
-      }
+    const storedData = localStorage.getItem(this.STORAGE_KEY);
+    if (!storedData) {
+      return;
     }
+
+    try {
+      const parsed = JSON.parse(storedData);
+
+      // Verificar se é formato novo (com version) ou antigo
+      if (this.isStoredAuthData(parsed)) {
+        // Formato novo com versionamento
+        this.handleVersionedData(parsed);
+      } else if (this.isUserResponse(parsed)) {
+        // Formato antigo (sem version) - tentar migrar
+        console.warn('[AuthService] Formato antigo detectado. Migrando para v1.0.0...');
+        this.migrateOldData(parsed);
+      } else {
+        // Dados inválidos
+        console.error('[AuthService] Dados inválidos no localStorage. Limpando...');
+        this.clearStorage();
+      }
+    } catch (error) {
+      console.error('[AuthService] Erro ao carregar usuário do localStorage:', error);
+      this.clearStorage();
+    }
+  }
+
+  /**
+   * Processa dados versionados do localStorage
+   */
+  private handleVersionedData(data: StoredAuthData): void {
+    // Validação de versão
+    if (data.version !== this.STORAGE_VERSION) {
+      console.warn(
+        `[AuthService] Schema version mismatch. ` +
+        `Esperado: ${this.STORAGE_VERSION}, Encontrado: ${data.version}. ` +
+        `Limpando storage...`
+      );
+      this.clearStorage();
+      return;
+    }
+
+    // Validação de dados do usuário
+    const user = data.user;
+    if (this.isValidUser(user)) {
+      this.currentUser.set(user);
+      console.log(`[AuthService] Sessão carregada com sucesso (v${data.version})`);
+    } else {
+      console.error('[AuthService] Dados de usuário inválidos. Limpando storage...');
+      this.clearStorage();
+    }
+  }
+
+  /**
+   * Migra dados do formato antigo para o novo formato versionado
+   */
+  private migrateOldData(oldUser: UserResponse): void {
+    if (this.isValidUser(oldUser)) {
+      const migratedData: StoredAuthData = {
+        version: this.STORAGE_VERSION,
+        user: oldUser,
+        timestamp: Date.now()
+      };
+
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(migratedData));
+      this.currentUser.set(oldUser);
+      console.log('[AuthService] Migração concluída com sucesso');
+    } else {
+      console.error('[AuthService] Dados antigos inválidos. Não é possível migrar.');
+      this.clearStorage();
+    }
+  }
+
+  /**
+   * Type guard para StoredAuthData
+   */
+  private isStoredAuthData(data: any): data is StoredAuthData {
+    return (
+      data &&
+      typeof data === 'object' &&
+      typeof data.version === 'string' &&
+      typeof data.timestamp === 'number' &&
+      data.user &&
+      typeof data.user === 'object'
+    );
+  }
+
+  /**
+   * Type guard para UserResponse
+   */
+  private isUserResponse(data: any): data is UserResponse {
+    return (
+      data &&
+      typeof data === 'object' &&
+      typeof data.publicId === 'string' &&
+      typeof data.login === 'string'
+    );
+  }
+
+  /**
+   * Valida se um objeto UserResponse tem todos os campos necessários
+   */
+  private isValidUser(user: UserResponse): boolean {
+    return !!(
+      user &&
+      user.publicId &&
+      user.login &&
+      Array.isArray(user.roles) &&
+      user.roles.length > 0
+    );
+  }
+
+  /**
+   * Limpa completamente o localStorage e estado de autenticação
+   */
+  private clearStorage(): void {
+    localStorage.removeItem(this.STORAGE_KEY);
+    this.currentUser.set(null);
   }
 
   /**

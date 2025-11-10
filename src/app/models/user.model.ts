@@ -30,6 +30,17 @@ export interface AuthState {
 }
 
 /**
+ * Stored Auth Data
+ * Estrutura versionada para armazenamento seguro de dados de autenticação
+ * Previne incompatibilidades ao atualizar o sistema
+ */
+export interface StoredAuthData {
+  version: string;        // Versão do schema (semantic versioning)
+  user: UserResponse;     // Dados completos do usuário
+  timestamp: number;      // Timestamp de quando foi salvo (para expiração opcional)
+}
+
+/**
  * Initiate Password Reset Request
  * Payload para iniciar processo de reset de senha
  */

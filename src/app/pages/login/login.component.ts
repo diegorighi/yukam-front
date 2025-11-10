@@ -47,7 +47,7 @@ export class LoginComponent {
   loginForm: FormGroup;
 
   constructor() {
-    // Inicializar formulário com validações
+    // Inicializar formulário SEMPRE (necessário para TypeScript strict mode)
     this.loginForm = this.fb.group({
       login: ['', [Validators.required, Validators.minLength(3)]],
       password: ['', [Validators.required, Validators.minLength(6)]]
@@ -56,9 +56,19 @@ export class LoginComponent {
     // Capturar returnUrl da query string (se houver)
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
 
-    // Redirect se já estiver autenticado E tiver roles válidas
-    if (this.authService.isAuthenticated() && this.authService.getUserRoles().length > 0) {
-      this.router.navigateByUrl(this.returnUrl);
+    // LIMPEZA PREVENTIVA: Garantir que não há estado corrompido
+    // Se chegou na tela de login, qualquer autenticação anterior deve ser considerada inválida
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      // Se tem usuário mas sem roles válidas, limpar estado
+      if (!currentUser.roles || currentUser.roles.length === 0) {
+        console.warn('LoginComponent: Usuário sem roles detectado. Limpando estado...');
+        this.authService.clearAuthState();
+      } else if (this.authService.isAuthenticated()) {
+        // Se está realmente autenticado com roles válidas, redirecionar
+        console.log('LoginComponent: Usuário já autenticado. Redirecionando...');
+        this.router.navigateByUrl(this.returnUrl);
+      }
     }
   }
 
